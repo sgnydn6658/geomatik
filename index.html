@@ -155,6 +155,32 @@
       filter: drop-shadow(0 12px 28px rgba(0,0,0,0.22));
     }
 
+    .img-bg-btn {
+      position: absolute;
+      left: 4px;
+      bottom: 4px;
+      z-index: 70;
+      background: rgba(15, 23, 42, 0.92);
+      color: #e2e8f0;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      border-radius: 8px;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 4px 8px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      white-space: nowrap;
+      pointer-events: auto;
+    }
+    .img-bg-btn:hover {
+      background: #1d4ed8;
+      color: #fff;
+      border-color: #3b82f6;
+    }
+    .instrument.edge-draw {
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%231e293b' stroke='%23ffffff' stroke-width='1.2' d='M3 21l3.5-1 11-11-2.5-2.5-11 11L3 21z'/%3E%3Cpath fill='%23f8fafc' stroke='%231e293b' stroke-width='0.8' d='M14.5 6.5l2.5 2.5 1.8-1.8a1.5 1.5 0 0 0 0-2.1L17.4 3.7a1.5 1.5 0 0 0-2.1 0L14.5 6.5z'/%3E%3C/svg%3E") 2 22, crosshair !important;
+    }
+
     ::-webkit-scrollbar {
       width: 5px;
       height: 5px;
@@ -179,7 +205,7 @@
         <i data-lucide="shapes" class="w-7 h-7 shrink-0 text-indigo-400"></i>
         <div class="min-w-0 overflow-hidden">
           <div class="text-sm whitespace-nowrap text-white font-bold tracking-wide">GEOMATİK</div>
-          <div class="text-[9px] whitespace-nowrap text-slate-400 font-medium">Dijital Matematik Eğitimi</div>
+          <div class="text-[11px] whitespace-nowrap text-indigo-300 font-semibold tracking-wide">Dijital Matematik Eğitimi</div>
         </div>
       </div>
 
@@ -257,16 +283,16 @@
       </div>
 
       <!-- Dışa Aktar (Export) Seçeneği -->
-      <div class="relative group/export">
-        <button id="btnExport" class="w-full flex items-center gap-3 p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition">
+      <div class="relative" id="exportMenuWrap">
+        <button id="btnExport" type="button" class="w-full flex items-center gap-3 p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition">
           <i data-lucide="download" class="w-5 h-5 shrink-0 text-cyan-400"></i>
           <span class="text-xs font-medium whitespace-nowrap">Dışa Aktar</span>
         </button>
-        <div class="absolute bottom-0 left-full ml-2 hidden group-hover/export:flex flex-col bg-slate-800 border border-slate-700 rounded-xl p-1 shadow-xl z-50 w-36 gap-1">
-          <button id="exportPNG" class="p-2 text-left text-xs hover:bg-slate-700 text-slate-200 rounded-lg flex items-center gap-2">
+        <div id="exportMenu" class="hidden flex-col rounded-xl p-1 shadow-2xl z-[100] w-40 gap-1 border border-slate-600" style="position:fixed; background:#1e293b; color:#e2e8f0;">
+          <button id="exportPNG" type="button" class="p-2 text-left text-xs hover:bg-slate-700 text-slate-200 rounded-lg flex items-center gap-2 w-full bg-transparent border-0 cursor-pointer">
             <i data-lucide="image" class="w-4 h-4 text-emerald-400"></i> PNG Görsel
           </button>
-          <button id="exportPDF" class="p-2 text-left text-xs hover:bg-slate-700 text-slate-200 rounded-lg flex items-center gap-2">
+          <button id="exportPDF" type="button" class="p-2 text-left text-xs hover:bg-slate-700 text-slate-200 rounded-lg flex items-center gap-2 w-full bg-transparent border-0 cursor-pointer">
             <i data-lucide="file-text" class="w-4 h-4 text-rose-400"></i> PDF Belgesi
           </button>
         </div>
@@ -291,7 +317,7 @@
       <button id="btnBackgroundPicker" type="button" class="flex items-center gap-2 rounded-xl border border-slate-300/80 bg-white/95 px-3 py-2 text-xs font-semibold text-slate-700 shadow-lg backdrop-blur hover:bg-white" aria-expanded="false" title="Tahta arka planını değiştir">
         <i data-lucide="palette" class="w-4 h-4 text-indigo-600"></i><span>Arka Plan</span><i data-lucide="chevron-down" class="w-3 h-3"></i>
       </button>
-      <div id="backgroundPickerMenu" class="hidden mt-2 w-48 rounded-xl border border-slate-200 bg-white/95 p-2 shadow-xl backdrop-blur">
+      <div id="backgroundPickerMenu" class="hidden mt-2 w-56 rounded-xl border border-slate-200 bg-white/95 p-2 shadow-xl backdrop-blur">
         <div class="px-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">Tahta görünümü</div>
         <button type="button" data-board-bg="none" class="board-bg-option flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-xs text-slate-700 hover:bg-indigo-50"><span class="h-4 w-4 rounded border border-slate-300 bg-white"></span>Düz beyaz</button>
         <button type="button" data-board-bg="graph" class="board-bg-option flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-xs text-slate-700 hover:bg-indigo-50"><span class="h-4 w-4 rounded border border-slate-300" style="background-image:linear-gradient(#cbd5e1 1px,transparent 1px),linear-gradient(90deg,#cbd5e1 1px,transparent 1px);background-size:5px 5px"></span>Kareli</button>
@@ -301,18 +327,40 @@
         <button type="button" data-board-bg="blue" class="board-bg-option flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-xs text-slate-700 hover:bg-indigo-50"><span class="h-4 w-4 rounded border border-slate-300 bg-sky-50"></span>Açık mavi</button>
       </div>
     </div>
+    <button id="pdfCloseButton" type="button" class="hidden absolute top-3 left-3 z-[80] items-center gap-2 rounded-xl border border-rose-200 bg-white/95 px-3 py-2 text-xs font-semibold text-rose-700 shadow-lg backdrop-blur hover:bg-rose-50" title="Açık PDF'yi kapat">
+      <i data-lucide="x" class="w-4 h-4"></i><span>PDF'yi Kapat</span>
+    </button>
     <!-- Çizim Modu ve Şekiller -->
-    <div id="shapeMenu" class="absolute top-[58px] right-3 z-[70] w-48 rounded-xl border border-slate-200 bg-white/95 p-2 shadow-xl backdrop-blur transition-[top] duration-150">
+    <div id="shapeMenu" class="absolute top-[58px] right-3 z-[70] w-56 rounded-xl border border-slate-200 bg-white/95 p-2 shadow-xl backdrop-blur transition-[top] duration-150">
       <div class="px-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">Çizim Modu / Şekil</div>
       <select id="shapeSelect" class="bg-slate-800 border border-slate-700 text-xs text-slate-200 rounded-lg p-2 focus:outline-none w-full cursor-pointer">
         <option value="free">✏️ Serbest Çizim</option>
         <option value="text">🔤 Metin / Yazı</option>
-        <option value="line">📏 Düz Çizgi</option>
+        <option value="line">📏 Doğru Parçası</option>
+        <option value="ray">↗️ Işın</option>
+        <option value="lineInfinite">↔️ Doğru</option>
+        <option value="angle">∠ Açı (3 Nokta)</option>
         <option value="arrow">➔ Ok İşareti</option>
         <option value="circle">⭕ Daire / Çember</option>
         <option value="rect">🔲 Dikdörtgen</option>
-        <option value="triangle">🔺 Üçgen</option>
       </select>
+    </div>
+
+    <!-- Düzgün Çokgen menüsü: Çizim Modu/Şekil menüsünün hemen altında ayrı açılır kontrol -->
+    <div id="polygonMenu" class="absolute top-[122px] right-3 z-[70] w-56">
+      <button id="btnPolygonMenu" type="button" class="w-full flex items-center justify-between rounded-xl border border-slate-200 bg-white/95 px-3 py-2 text-xs font-semibold text-slate-700 shadow-lg backdrop-blur hover:bg-white">
+        <span>⬡ Düzgün Çokgen</span><i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+      </button>
+      <div id="polygonMenuPanel" class="hidden mt-2 rounded-xl border border-slate-200 bg-white/95 p-2 shadow-xl backdrop-blur">
+        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-1 pb-1">Kenar Sayısı</div>
+        <div class="flex items-center gap-2">
+          <button id="polygonMinus" type="button" class="w-8 h-8 rounded-lg bg-slate-800 text-white font-bold">−</button>
+          <input id="polygonSides" type="number" min="3" max="30" value="5" class="flex-1 min-w-0 bg-slate-800 border border-slate-700 text-white text-center rounded-lg p-1.5 text-xs">
+          <button id="polygonPlus" type="button" class="w-8 h-8 rounded-lg bg-slate-800 text-white font-bold">+</button>
+        </div>
+        <div class="text-[9px] text-slate-500 mt-1 px-1">Tahtaya sürükleyerek çiz. Yönü sürükleme açısı belirler.</div>
+        <button id="btnUsePolygon" type="button" class="w-full mt-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold py-2">Çokgen Çiz</button>
+      </div>
     </div>
 
     <!-- PDF Canvas Katmanı -->
@@ -341,14 +389,14 @@
       <!-- CETVEL -->
       <div id="ruler" class="instrument glass-acrylic rounded-md hidden pointer-events-auto" style="width: 480px; height: 80px; top: 0; left: 0; transform-origin: center center;">
         <canvas id="rulerCanvas" class="w-full h-full"></canvas>
-        <div class="handle rotate-handle -top-3.5 -right-3.5" data-action="rotate" title="Döndür"></div>
+<div class="handle rotate-handle -top-3.5 -right-3.5" data-action="rotate" title="Döndür"></div>
         <div class="handle resize-handle -bottom-3.5 -right-3.5" data-action="resize" title="Uzunluğu Ayarla"></div>
       </div>
 
       <!-- İLETKİ / AÇIÖLÇER -->
       <div id="protractor" class="instrument glass-acrylic rounded-t-full hidden pointer-events-auto" style="touch-action:none; user-select:none;" style="width: 380px; height: 190px; top: 180px; left: 240px;">
         <canvas id="protractorCanvas" class="w-full h-full"></canvas>
-        <div id="protractorResizeHandleLeft" class="handle resize-handle" style="left: -21px; bottom: -21px; width:42px; height:42px; background:#22c55e; border:3px solid white; box-shadow:0 2px 8px rgba(0,0,0,.35); touch-action:none;" title="Boyutlandır ve Döndür (180° Noktası)"></div>
+<div id="protractorResizeHandleLeft" class="handle resize-handle" style="left: -21px; bottom: -21px; width:42px; height:42px; background:#22c55e; border:3px solid white; box-shadow:0 2px 8px rgba(0,0,0,.35); touch-action:none;" title="Boyutlandır ve Döndür (180° Noktası)"></div>
         <div id="protractorResizeHandle" class="handle resize-handle" style="right: -21px; bottom: -21px; width:42px; height:42px; background:#22c55e; border:3px solid white; box-shadow:0 2px 8px rgba(0,0,0,.35); touch-action:none;" title="Boyutlandır ve Döndür (0° Noktası)"></div>
         <button id="btnToggle360" class="absolute bottom-2 left-3 bg-slate-900/80 text-white text-[10px] px-2 py-0.5 rounded border border-slate-600 hover:bg-slate-700 shadow-sm">180° / 360°</button>
       </div>
@@ -356,13 +404,13 @@
       <!-- 45-45-90 GÖNYE -->
       <div id="triangle45" class="instrument hidden pointer-events-auto" style="width: 290px; height: 290px; top: 0; left: 0; transform-origin: center center;">
         <canvas id="triangle45Canvas" class="w-full h-full"></canvas>
-        <div class="handle rotate-handle" data-action="rotate" style="left: -14px; bottom: -14px;" title="Dik köşeden döndür"></div>
+<div class="handle rotate-handle" data-action="rotate" style="left: -14px; bottom: -14px;" title="Dik köşeden döndür"></div>
         <div class="handle resize-handle -bottom-3.5 -right-3.5" data-action="resize" title="Boyutlandır"></div>
       </div>
 
       <!-- MEKANİK PERGEL -->
       <div id="compassContainer" class="hidden pointer-events-auto">
-        <svg id="compassSVG" width="360" height="500" viewBox="-180 -350 360 500" class="overflow-visible">
+<svg id="compassSVG" width="360" height="500" viewBox="-180 -350 360 500" class="overflow-visible">
           <defs>
             <linearGradient id="simpleMetal" x1="0" y1="0" x2="1" y2="0">
               <stop offset="0" stop-color="#bfc2c9" />
@@ -527,6 +575,8 @@
       // Geçmiş Limit
       maxHistory: 30,
       shapeStart: null,
+      anglePoints: [],
+      polygonSides: 5,
 
       // Geometri Araçları
       instruments: {
@@ -632,33 +682,173 @@
     // Tuval Yeniden Boyutlandırma
     let canvasLogicalSize = null;
 
+    // Çizim tuvali orijini (workspace CSS). PDF zoom ile genişler / hizalanır.
+    if (typeof state.drawOrigin === 'undefined') state.drawOrigin = { x: 0, y: 0 };
+    if (typeof state.pdfLayout === 'undefined') state.pdfLayout = null; // {left, top, w, h}
+
+    function getDrawCoverageRect() {
+      const w = workspace.clientWidth || 1;
+      const h = workspace.clientHeight || 1;
+      let x0 = 0, y0 = 0, x1 = w, y1 = h;
+      if (state.pdfDoc && pdfCanvas && pdfCanvas.width > 1) {
+        const pdfLeft = parseFloat(pdfCanvas.style.left) || 0;
+        const pdfTop = parseFloat(pdfCanvas.style.top) || 0;
+        const pdfW = pdfCanvas.width;
+        const pdfH = pdfCanvas.height;
+        const pad = 160;
+        // PDF'nin tamamı + görünür alan
+        x0 = Math.min(0, pdfLeft) - pad;
+        y0 = Math.min(0, pdfTop) - pad;
+        x1 = Math.max(w, pdfLeft + pdfW) + pad;
+        y1 = Math.max(h, pdfTop + pdfH) + pad;
+      }
+      let cssW = Math.ceil(x1 - x0);
+      let cssH = Math.ceil(y1 - y0);
+      // Tarayıcı güvenli tavan (çok yüksek zoom'da dpr düşürülerek PDF yine kapsanır)
+      const MAX = 16384;
+      cssW = Math.min(Math.max(cssW, w), MAX);
+      cssH = Math.min(Math.max(cssH, h), MAX);
+      return { x0, y0, cssW, cssH };
+    }
+
+    function applyDrawCanvasGeometry(x0, y0, cssW, cssH, oldOrigin, oldCanvas, pdfScaleInfo) {
+      // Büyük alanda dpr'yi düşürerek belleği koru; yazma alanı yine PDF kadar genişler
+      let dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+      while (cssW * dpr > 16384 || cssH * dpr > 16384) {
+        if (dpr <= 1) break;
+        dpr = Math.max(1, dpr - 0.5);
+      }
+      if (cssW * dpr > 16384) { cssW = Math.floor(16384 / dpr); }
+      if (cssH * dpr > 16384) { cssH = Math.floor(16384 / dpr); }
+
+      const bufW = Math.max(1, Math.round(cssW * dpr));
+      const bufH = Math.max(1, Math.round(cssH * dpr));
+      drawCanvas.width = bufW;
+      drawCanvas.height = bufH;
+      drawCanvas.style.width = `${bufW / dpr}px`;
+      drawCanvas.style.height = `${bufH / dpr}px`;
+      drawCanvas.style.left = `${x0}px`;
+      drawCanvas.style.top = `${y0}px`;
+      drawCanvas.style.maxWidth = 'none';
+      drawCanvas.style.maxHeight = 'none';
+      drawCtx.setTransform(1, 0, 0, 1, 0, 0);
+      drawCtx.imageSmoothingEnabled = true;
+      drawCtx.clearRect(0, 0, bufW, bufH);
+
+      if (oldCanvas && oldCanvas.width && oldCanvas.height) {
+        const ox = (oldOrigin && typeof oldOrigin.x === 'number') ? oldOrigin.x : 0;
+        const oy = (oldOrigin && typeof oldOrigin.y === 'number') ? oldOrigin.y : 0;
+        if (pdfScaleInfo && pdfScaleInfo.oldW > 0 && pdfScaleInfo.newW > 0) {
+          // Zoom: eski çizimleri PDF ile birlikte ölçekle ve yeni konuma yerleştir
+          const sx = pdfScaleInfo.newW / pdfScaleInfo.oldW;
+          const sy = pdfScaleInfo.newH / pdfScaleInfo.oldH;
+          // Eski tuval CSS boyutu
+          const oldCssW = oldCanvas.width / (oldCanvas._dpr || dpr);
+          const oldCssH = oldCanvas.height / (oldCanvas._dpr || dpr);
+          // Eski içeriğin workspace'teki konumu (ox, oy), yeni ölçek + yeni PDF sol-üst
+          // Nokta: world = ox + local; local relative to old PDF → new
+          const oldPdfL = pdfScaleInfo.oldL, oldPdfT = pdfScaleInfo.oldT;
+          const newPdfL = pdfScaleInfo.newL, newPdfT = pdfScaleInfo.newT;
+          // drawImage ile: önce eski bitmap'i eski orijine göre, ölçekleyerek yeni PDF hizasına
+          // Hedef: eski world noktası P → newP = newPdfL + (P - oldPdfL) * sx
+          // Canvas'ta hedef local = newP - x0
+          const destX = (newPdfL + (ox - oldPdfL) * sx - x0) * dpr;
+          const destY = (newPdfT + (oy - oldPdfT) * sy - y0) * dpr;
+          const destW = oldCanvas.width * sx * (dpr / (oldCanvas._dpr || dpr));
+          const destH = oldCanvas.height * sy * (dpr / (oldCanvas._dpr || dpr));
+          try {
+            drawCtx.drawImage(oldCanvas, destX, destY, destW, destH);
+          } catch (_) {
+            drawCtx.drawImage(oldCanvas, (ox - x0) * dpr, (oy - y0) * dpr);
+          }
+        } else {
+          const dx = (ox - x0) * dpr;
+          const dy = (oy - y0) * dpr;
+          try { drawCtx.drawImage(oldCanvas, dx, dy); } catch (_) {}
+        }
+      }
+      state.drawOrigin = { x: x0, y: y0 };
+      drawCanvas._dpr = dpr;
+    }
+
+    function ensureDrawCanvasCoversContent() {
+      const cov = getDrawCoverageRect();
+      const curW = parseFloat(drawCanvas.style.width) || 0;
+      const curH = parseFloat(drawCanvas.style.height) || 0;
+      const curL = parseFloat(drawCanvas.style.left) || 0;
+      const curT = parseFloat(drawCanvas.style.top) || 0;
+
+      // PDF layout değişimi (zoom) → çizimleri ölçekle
+      let pdfScaleInfo = null;
+      if (state.pdfDoc && pdfCanvas && pdfCanvas.width > 1) {
+        const newLayout = {
+          left: parseFloat(pdfCanvas.style.left) || 0,
+          top: parseFloat(pdfCanvas.style.top) || 0,
+          w: pdfCanvas.width,
+          h: pdfCanvas.height
+        };
+        const old = state.pdfLayout;
+        if (old && old.w > 0 && (Math.abs(old.w - newLayout.w) > 1 || Math.abs(old.h - newLayout.h) > 1 ||
+            Math.abs(old.left - newLayout.left) > 1 || Math.abs(old.top - newLayout.top) > 1)) {
+          pdfScaleInfo = {
+            oldL: old.left, oldT: old.top, oldW: old.w, oldH: old.h,
+            newL: newLayout.left, newT: newLayout.top, newW: newLayout.w, newH: newLayout.h
+          };
+        }
+        state.pdfLayout = newLayout;
+      } else {
+        state.pdfLayout = null;
+      }
+
+      const need =
+        !!pdfScaleInfo ||
+        cov.cssW > curW + 1 || cov.cssH > curH + 1 ||
+        cov.x0 < curL - 1 || cov.y0 < curT - 1 ||
+        (cov.x0 + cov.cssW) > (curL + curW + 1) ||
+        (cov.y0 + cov.cssH) > (curT + curH + 1) ||
+        !drawCanvas.width;
+
+      if (!need) return;
+
+      const oldOrigin = { x: state.drawOrigin?.x || curL, y: state.drawOrigin?.y || curT };
+      const oldCanvas = document.createElement('canvas');
+      oldCanvas.width = drawCanvas.width;
+      oldCanvas.height = drawCanvas.height;
+      oldCanvas._dpr = drawCanvas._dpr || Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+      if (drawCanvas.width && drawCanvas.height) {
+        try { oldCanvas.getContext('2d').drawImage(drawCanvas, 0, 0); } catch (_) {}
+      }
+      applyDrawCanvasGeometry(cov.x0, cov.y0, cov.cssW, cov.cssH, oldOrigin, oldCanvas, pdfScaleInfo);
+    }
+
     function resizeCanvases() {
       const w = workspace.clientWidth;
       const h = workspace.clientHeight;
       if (!w || !h) return;
 
-      // Çizim tuvalinin gerçek çözünürlüğünü sabit tut; ekranda orantılı ölçekle.
-      if (!canvasLogicalSize) {
-        canvasLogicalSize = { w, h };
-        drawCanvas.width = w;
-        drawCanvas.height = h;
+      const oldOrigin = { x: state.drawOrigin?.x || 0, y: state.drawOrigin?.y || 0 };
+      const oldCanvas = document.createElement('canvas');
+      oldCanvas.width = drawCanvas.width;
+      oldCanvas.height = drawCanvas.height;
+      if (drawCanvas.width && drawCanvas.height) {
+        try { oldCanvas.getContext('2d').drawImage(drawCanvas, 0, 0); } catch (_) {}
       }
 
-      const scale = Math.min(w / canvasLogicalSize.w, h / canvasLogicalSize.h);
-      const displayW = canvasLogicalSize.w * scale;
-      const displayH = canvasLogicalSize.h * scale;
-      drawCanvas.style.width = `${displayW}px`;
-      drawCanvas.style.height = `${displayH}px`;
-      drawCanvas.style.left = `${(w - displayW) / 2}px`;
-      drawCanvas.style.top = `${(h - displayH) / 2}px`;
+      // Önce PDF varsa yeniden çiz (boyut/konum güncellenir), sonra çizim tuvalini PDF'yi kapsayacak şekilde ayarla
+      if (state.pdfDoc) {
+        renderPdfPage(state.pageNum);
+      } else {
+        const cov = getDrawCoverageRect();
+        applyDrawCanvasGeometry(cov.x0, cov.y0, cov.cssW, cov.cssH, oldOrigin, oldCanvas);
+      }
 
-      if (state.pdfDoc) renderPdfPage(state.pageNum);
       renderRulerGraphics();
       renderProtractorGraphics();
       updateProtractorTransform();
       renderTriangle45Graphics();
       updateCompassTransform();
     }
+
     window.addEventListener('resize', resizeCanvases);
     lucide.createIcons();
 
@@ -678,6 +868,8 @@
             state.pdfDoc = pdf;
             pageCountSpan.textContent = `/ ${pdf.numPages}`;
             pdfControls.classList.remove('hidden');
+            document.getElementById('pdfCloseButton').classList.remove('hidden');
+            document.getElementById('pdfCloseButton').classList.add('flex');
             state.pageNum = 1;
             pageNumInput.value = 1;
             renderPdfPage(1);
@@ -687,23 +879,59 @@
       }
     });
 
+    let pdfRenderToken = 0;
+    let activePdfRenderTask = null;
+
     function renderPdfPage(num) {
+      if (!state.pdfDoc) return;
+      const token = ++pdfRenderToken;
       state.pdfDoc.getPage(num).then((page) => {
-        const unscaledViewport = page.getViewport({ scale: 1 });
+        if (token !== pdfRenderToken) return;
+        const unscaledViewport = page.getViewport({ scale: 1, rotation: 0 });
         const baseScale = Math.min(workspace.clientWidth / unscaledViewport.width, workspace.clientHeight / unscaledViewport.height) * 0.95;
         const finalScale = baseScale * state.zoomScale;
-        const viewport = page.getViewport({ scale: finalScale });
+        // PDF'nin kendi /Rotate bilgisini yok say: sayfalar her zaman dik ve tutarlı açıyla açılır.
+        const viewport = page.getViewport({ scale: finalScale, rotation: 0 });
 
-        pdfCanvas.width = viewport.width;
-        pdfCanvas.height = viewport.height;
-
+        pdfCanvas.width = Math.ceil(viewport.width);
+        pdfCanvas.height = Math.ceil(viewport.height);
         pdfCanvas.style.left = `${(workspace.clientWidth - viewport.width) / 2}px`;
         pdfCanvas.style.top = `${(workspace.clientHeight - viewport.height) / 2}px`;
+        pdfCanvas.style.transform = 'none';
 
-        page.render({ canvasContext: pdfCtx, viewport: viewport });
+        if (activePdfRenderTask) {
+          try { activePdfRenderTask.cancel(); } catch (_) {}
+        }
+        activePdfRenderTask = page.render({ canvasContext: pdfCtx, viewport: viewport });
+        activePdfRenderTask.promise.catch(err => {
+          if (err && err.name !== 'RenderingCancelledException') console.error(err);
+        });
         document.getElementById('zoomLevel').textContent = `${Math.round(state.zoomScale * 100)}%`;
+        // PDF yüklendi / büyütüldü: çizim tuvalini PDF'nin tamamını kapsayacak şekilde hizala
+        ensureDrawCanvasCoversContent();
       });
     }
+
+    function closePdf() {
+      pdfRenderToken++;
+      if (activePdfRenderTask) { try { activePdfRenderTask.cancel(); } catch (_) {} activePdfRenderTask = null; }
+      state.pdfDoc = null;
+      pdfCtx.clearRect(0, 0, pdfCanvas.width, pdfCanvas.height);
+      pdfCanvas.width = 1;
+      pdfCanvas.height = 1;
+      pdfCanvas.style.left = '0px';
+      pdfCanvas.style.top = '0px';
+      pdfControls.classList.add('hidden');
+      document.getElementById('pdfCloseButton').classList.add('hidden');
+      pdfInput.value = '';
+      state.pageNum = 1;
+      state.zoomScale = 1;
+      document.getElementById('zoomLevel').textContent = '100%';
+      // Çizim tuvalini workspace boyutuna geri al
+      state.drawOrigin = { x: 0, y: 0 };
+      try { ensureDrawCanvasCoversContent(); } catch (_) {}
+    }
+    document.getElementById('pdfCloseButton').addEventListener('click', closePdf);
 
     document.getElementById('prevPage').addEventListener('click', () => {
       if (state.pageNum <= 1) return;
@@ -728,18 +956,32 @@
     });
 
     document.getElementById('zoomIn').addEventListener('click', () => {
-      if (state.zoomScale < 3.0) {
-        state.zoomScale += 0.15;
+      // Sınırsıza yakın büyütme
+      if (state.zoomScale < 50) {
+        state.zoomScale = Math.min(50, state.zoomScale * 1.25);
         renderPdfPage(state.pageNum);
       }
     });
 
     document.getElementById('zoomOut').addEventListener('click', () => {
-      if (state.zoomScale > 0.5) {
-        state.zoomScale -= 0.15;
+      if (state.zoomScale > 0.15) {
+        state.zoomScale = Math.max(0.15, state.zoomScale / 1.25);
         renderPdfPage(state.pageNum);
       }
     });
+
+    // Ctrl + tekerlek ile PDF zoom (yazma alanı otomatik genişler)
+    workspace.addEventListener('wheel', (e) => {
+      if (!state.pdfDoc) return;
+      if (!(e.ctrlKey || e.metaKey)) return;
+      e.preventDefault();
+      if (e.deltaY < 0) {
+        state.zoomScale = Math.min(50, state.zoomScale * 1.12);
+      } else {
+        state.zoomScale = Math.max(0.15, state.zoomScale / 1.12);
+      }
+      renderPdfPage(state.pageNum);
+    }, { passive: false });
 
     // 2. Resim Yükleme ve Etkileşim
     const imageInput = document.getElementById('imageInput');
@@ -777,10 +1019,33 @@
       deleteHandle.className = 'handle delete-handle -top-3.5 -left-3.5';
       deleteHandle.title = 'Sil';
 
+      const bgBtn = document.createElement('button');
+      bgBtn.type = 'button';
+      bgBtn.className = 'img-bg-btn';
+      bgBtn.title = 'Bu resmi mevcut boyutta tahta arka planı yap';
+      bgBtn.textContent = 'Arka plan yap';
+      bgBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
+      bgBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const wsRect = workspace.getBoundingClientRect();
+        const cRect = container.getBoundingClientRect();
+        const left = cRect.left - wsRect.left;
+        const top = cRect.top - wsRect.top;
+        const w = Math.max(1, Math.round(cRect.width));
+        const h = Math.max(1, Math.round(cRect.height || (w * (img.naturalHeight / (img.naturalWidth || 1)))));
+        workspace.style.backgroundColor = '#ffffff';
+        workspace.style.backgroundImage = `url(${src})`;
+        workspace.style.backgroundRepeat = 'no-repeat';
+        workspace.style.backgroundPosition = `${left}px ${top}px`;
+        workspace.style.backgroundSize = `${w}px ${h}px`;
+        workspace.className = 'relative flex-1 board-bg overflow-hidden';
+      });
+
       container.appendChild(img);
       container.appendChild(rotateHandle);
       container.appendChild(resizeHandle);
       container.appendChild(deleteHandle);
+      container.appendChild(bgBtn);
       imageLayer.appendChild(container);
 
       let isDragging = false, isRotating = false, isResizing = false;
@@ -857,11 +1122,12 @@
         return;
       }
       saveCanvasState();
-      drawCtx.font = `${state.isItalic ? 'italic ' : ''}${state.isBold ? 'bold ' : ''}${fontSizeInput.value}px Inter, sans-serif`;
+      const textDpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+      drawCtx.font = `${state.isItalic ? 'italic ' : ''}${state.isBold ? 'bold ' : ''}${fontSizeInput.value * textDpr}px Inter, sans-serif`;
       drawCtx.fillStyle = state.penColor;
       
       const lines = textContent.value.split('\n');
-      const lineHeight = parseInt(fontSizeInput.value) * 1.2;
+      const lineHeight = parseInt(fontSizeInput.value) * textDpr * 1.2;
       lines.forEach((line, i) => {
         drawCtx.fillText(line, state.pendingTextPos.x, state.pendingTextPos.y + (i * lineHeight));
       });
@@ -879,6 +1145,17 @@
       const scaleX = drawCanvas.width / rect.width || 1;
       const scaleY = drawCanvas.height / rect.height || 1;
       return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
+    }
+
+    function setDrawingStyle() {
+      const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+      drawCtx.lineCap = 'round';
+      drawCtx.lineJoin = 'round';
+      drawCtx.imageSmoothingEnabled = true;
+      drawCtx.globalAlpha = state.currentTool === 'highlighter' ? 0.35 : 1;
+      drawCtx.globalCompositeOperation = state.currentTool === 'eraser' ? 'destination-out' : 'source-over';
+      drawCtx.strokeStyle = state.penColor;
+      drawCtx.lineWidth = (state.currentTool === 'eraser' ? state.penWidth * 6 : state.currentTool === 'highlighter' ? state.penWidth * 4 : state.penWidth) * dpr;
     }
 
     drawCanvas.addEventListener('pointerdown', (e) => {
@@ -907,13 +1184,29 @@
         textInputBox.classList.add('hidden');
       }
 
+      // Açı 3 ayrı dokunuşla oluşturulur: ışın üzerindeki nokta → köşe → diğer ışın üzerindeki nokta.
+      if (state.selectedShape === 'angle') {
+        state.anglePoints.push(pos);
+        if (state.anglePoints.length === 3) {
+          saveCanvasState();
+          drawThreePointAngle(state.anglePoints);
+          state.anglePoints = [];
+        }
+        state.isDrawing = false;
+        return;
+      }
+
       saveCanvasState();
       state.isDrawing = true;
       lastX = pos.x;
       lastY = pos.y;
       state.shapeStart = pos;
 
-      snapshot = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
+      try {
+        snapshot = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
+      } catch (err) {
+        snapshot = null;
+      }
     });
 
     drawCanvas.addEventListener('pointermove', (e) => {
@@ -931,31 +1224,14 @@
       let pos = getPos(e);
 
       if (state.selectedShape !== 'free' && state.selectedShape !== 'text' && state.currentTool !== 'eraser') {
-        drawCtx.putImageData(snapshot, 0, 0);
+        if (snapshot) drawCtx.putImageData(snapshot, 0, 0);
         drawShapePreview(state.shapeStart, pos);
       } else if (state.selectedShape === 'free') {
         drawCtx.beginPath();
         drawCtx.moveTo(lastX, lastY);
         drawCtx.lineTo(pos.x, pos.y);
 
-        if (state.currentTool === 'pen') {
-          drawCtx.globalCompositeOperation = 'source-over';
-          drawCtx.strokeStyle = state.penColor;
-          drawCtx.lineWidth = state.penWidth;
-          drawCtx.globalAlpha = 1.0;
-        } else if (state.currentTool === 'highlighter') {
-          drawCtx.globalCompositeOperation = 'source-over';
-          drawCtx.strokeStyle = state.penColor;
-          drawCtx.lineWidth = state.penWidth * 4;
-          drawCtx.globalAlpha = 0.35;
-        } else if (state.currentTool === 'eraser') {
-          drawCtx.globalCompositeOperation = 'destination-out';
-          drawCtx.lineWidth = state.penWidth * 6;
-          drawCtx.globalAlpha = 1.0;
-        }
-        
-        drawCtx.lineCap = 'round';
-        drawCtx.lineJoin = 'round';
+        setDrawingStyle();
         drawCtx.stroke();
         drawCtx.globalAlpha = 1.0;
         lastX = pos.x;
@@ -966,37 +1242,80 @@
     function drawShapePreview(start, current) {
       drawCtx.beginPath();
       drawCtx.strokeStyle = state.penColor;
-      drawCtx.lineWidth = state.penWidth;
+      const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+      drawCtx.lineWidth = state.penWidth * dpr;
       drawCtx.globalAlpha = state.currentTool === 'highlighter' ? 0.35 : 1.0;
       drawCtx.globalCompositeOperation = 'source-over';
 
       const dx = current.x - start.x;
       const dy = current.y - start.y;
+      const length = Math.hypot(dx, dy) || 1;
+      const ux = dx / length, uy = dy / length;
 
-      if (state.selectedShape === 'line') {
+      if (state.selectedShape === 'line' || state.selectedShape === 'segment') {
         drawCtx.moveTo(start.x, start.y);
         drawCtx.lineTo(current.x, current.y);
+      } else if (state.selectedShape === 'ray') {
+        const extend = Math.max(drawCanvas.width, drawCanvas.height) * 2;
+        drawCtx.moveTo(start.x, start.y);
+        drawCtx.lineTo(start.x + ux * extend, start.y + uy * extend);
+      } else if (state.selectedShape === 'lineInfinite') {
+        const extend = Math.max(drawCanvas.width, drawCanvas.height) * 2;
+        drawCtx.moveTo(start.x - ux * extend, start.y - uy * extend);
+        drawCtx.lineTo(start.x + ux * extend, start.y + uy * extend);
       } else if (state.selectedShape === 'arrow') {
         drawCtx.moveTo(start.x, start.y);
         drawCtx.lineTo(current.x, current.y);
-        const headlen = 14;
+        const headlen = 14 * dpr;
         const angle = Math.atan2(dy, dx);
         drawCtx.lineTo(current.x - headlen * Math.cos(angle - Math.PI / 6), current.y - headlen * Math.sin(angle - Math.PI / 6));
         drawCtx.moveTo(current.x, current.y);
         drawCtx.lineTo(current.x - headlen * Math.cos(angle + Math.PI / 6), current.y - headlen * Math.sin(angle + Math.PI / 6));
       } else if (state.selectedShape === 'circle') {
-        const radius = Math.hypot(dx, dy);
-        drawCtx.arc(start.x, start.y, radius, 0, Math.PI * 2);
+        // Ekran pikseline göre izotropik yarıçap → tuvalde her zaman gerçek daire (elips olmaz)
+        const rect = drawCanvas.getBoundingClientRect();
+        const sx = drawCanvas.width / (rect.width || 1);
+        const sy = drawCanvas.height / (rect.height || 1);
+        const s = (Math.abs(sx) + Math.abs(sy)) / 2 || 1;
+        const rScreen = Math.hypot(dx / (sx || 1), dy / (sy || 1));
+        const r = Math.max(0.5, rScreen * s);
+        drawCtx.arc(start.x, start.y, r, 0, Math.PI * 2);
       } else if (state.selectedShape === 'rect') {
         drawCtx.rect(start.x, start.y, dx, dy);
-      } else if (state.selectedShape === 'triangle') {
-        drawCtx.moveTo(start.x + dx / 2, start.y);
-        drawCtx.lineTo(start.x, start.y + dy);
-        drawCtx.lineTo(start.x + dx, start.y + dy);
-        drawCtx.closePath();
+      } else if (state.selectedShape === 'polygon') {
+        const radius = Math.hypot(dx, dy);
+        const rotation = Math.atan2(dy, dx) - Math.PI / 2;
+        const n = Math.max(3, Math.min(30, state.polygonSides));
+        for (let i = 0; i <= n; i++) {
+          const a = rotation + (i % n) * Math.PI * 2 / n;
+          const x = start.x + radius * Math.cos(a);
+          const y = start.y + radius * Math.sin(a);
+          if (i === 0) drawCtx.moveTo(x, y); else drawCtx.lineTo(x, y);
+        }
       }
       drawCtx.stroke();
       drawCtx.globalAlpha = 1.0;
+    }
+
+    function drawThreePointAngle(points) {
+      if (points.length !== 3) return;
+      const [p1, vertex, p3] = points;
+      const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+      const rayLen = Math.max(drawCanvas.width, drawCanvas.height) * 2;
+      const a1 = Math.atan2(p1.y - vertex.y, p1.x - vertex.x);
+      const a2 = Math.atan2(p3.y - vertex.y, p3.x - vertex.x);
+      drawCtx.save();
+      drawCtx.strokeStyle = state.penColor;
+      drawCtx.lineWidth = state.penWidth * dpr;
+      drawCtx.lineCap = 'round';
+      drawCtx.beginPath();
+      drawCtx.moveTo(vertex.x, vertex.y);
+      drawCtx.lineTo(vertex.x + Math.cos(a1) * rayLen, vertex.y + Math.sin(a1) * rayLen);
+      drawCtx.moveTo(vertex.x, vertex.y);
+      drawCtx.lineTo(vertex.x + Math.cos(a2) * rayLen, vertex.y + Math.sin(a2) * rayLen);
+      drawCtx.stroke();
+      [p1, vertex, p3].forEach(p => { drawCtx.beginPath(); drawCtx.arc(p.x, p.y, 4*dpr, 0, Math.PI*2); drawCtx.fillStyle = state.penColor; drawCtx.fill(); });
+      drawCtx.restore();
     }
 
     function endDrawing(e) {
@@ -1021,10 +1340,10 @@
     drawCanvas.addEventListener('pointercancel', endDrawing);
 
     // Araç Mod Değiştiricileri
-    document.getElementById('btnHand').addEventListener('click', () => setTool('hand', 'btnHand'));
-    document.getElementById('btnPen').addEventListener('click', () => setTool('pen', 'btnPen'));
-    document.getElementById('btnHighlighter').addEventListener('click', () => setTool('highlighter', 'btnHighlighter'));
-    document.getElementById('btnEraser').addEventListener('click', () => setTool('eraser', 'btnEraser'));
+    document.getElementById('btnHand').addEventListener('click', () => { state.selectedShape = 'free'; document.getElementById('shapeSelect').value = 'free'; setTool('hand', 'btnHand'); });
+    document.getElementById('btnPen').addEventListener('click', () => { state.selectedShape = 'free'; document.getElementById('shapeSelect').value = 'free'; setTool('pen', 'btnPen'); });
+    document.getElementById('btnHighlighter').addEventListener('click', () => { state.selectedShape = 'free'; document.getElementById('shapeSelect').value = 'free'; setTool('highlighter', 'btnHighlighter'); });
+    document.getElementById('btnEraser').addEventListener('click', () => { state.selectedShape = 'free'; document.getElementById('shapeSelect').value = 'free'; setTool('eraser', 'btnEraser'); });
 
     function setTool(tool, btnId) {
       state.currentTool = tool;
@@ -1041,6 +1360,32 @@
 
     document.getElementById('shapeSelect').addEventListener('change', (e) => {
       state.selectedShape = e.target.value;
+      state.anglePoints = [];
+    });
+
+    const polygonMenuPanel = document.getElementById('polygonMenuPanel');
+    document.getElementById('btnPolygonMenu').addEventListener('click', (e) => {
+      e.stopPropagation();
+      polygonMenuPanel.classList.toggle('hidden');
+    });
+    document.getElementById('polygonMinus').addEventListener('click', () => {
+      state.polygonSides = Math.max(3, state.polygonSides - 1);
+      document.getElementById('polygonSides').value = state.polygonSides;
+    });
+    document.getElementById('polygonPlus').addEventListener('click', () => {
+      state.polygonSides = Math.min(30, state.polygonSides + 1);
+      document.getElementById('polygonSides').value = state.polygonSides;
+    });
+    document.getElementById('polygonSides').addEventListener('input', (e) => {
+      state.polygonSides = Math.max(3, Math.min(30, parseInt(e.target.value) || 3));
+      e.target.value = state.polygonSides;
+    });
+    document.getElementById('btnUsePolygon').addEventListener('click', () => {
+      state.selectedShape = 'polygon';
+      state.currentTool = 'pen';
+      document.getElementById('shapeSelect').value = 'free';
+      setTool('pen', 'btnPen');
+      polygonMenuPanel.classList.add('hidden');
     });
 
     // Renk Seçimi
@@ -1082,6 +1427,9 @@
     function applyBoardBackground(mode) {
       workspace.className = 'relative flex-1 board-bg overflow-hidden';
       workspace.style.backgroundImage = '';
+      workspace.style.backgroundSize = '';
+      workspace.style.backgroundRepeat = '';
+      workspace.style.backgroundPosition = '';
       workspace.style.backgroundColor = '#ffffff';
       if (mode === 'graph') workspace.classList.add('grid-graph');
       else if (mode === 'dots') workspace.classList.add('grid-dots');
@@ -1095,10 +1443,13 @@
     const backgroundPickerButton = document.getElementById('btnBackgroundPicker');
     const backgroundPickerMenu = document.getElementById('backgroundPickerMenu');
     const shapeMenu = document.getElementById('shapeMenu');
+    const polygonMenu = document.getElementById('polygonMenu');
     function syncTopRightMenus() {
       const open = !backgroundPickerMenu.classList.contains('hidden');
       // Kapalıyken doğrudan Arka Plan düğmesinin altı; açıkken Arka Plan listesinin altı.
-      shapeMenu.style.top = open ? `${document.getElementById('backgroundPicker').offsetHeight + 8}px` : '58px';
+      const shapeTop = open ? document.getElementById('backgroundPicker').offsetHeight + 8 : 58;
+      shapeMenu.style.top = `${shapeTop}px`;
+      polygonMenu.style.top = `${shapeTop + shapeMenu.offsetHeight + 8}px`;
     }
     backgroundPickerButton.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -1121,6 +1472,7 @@
         backgroundPickerButton.setAttribute('aria-expanded', 'false');
         syncTopRightMenus();
       }
+      if (!polygonMenu.contains(e.target)) polygonMenuPanel.classList.add('hidden');
     });
 
     document.getElementById('btnClear').addEventListener('click', () => {
@@ -1137,8 +1489,44 @@
         if (document.exitFullscreen) document.exitFullscreen();
       }
     });
+    document.addEventListener('fullscreenchange', () => {
+      // Tam ekran giriş/çıkışta tuval oranını koruyarak yeniden boyutlandır (daire elips olmasın)
+      const run = () => { try { resizeCanvases(); } catch (_) {} };
+      run();
+      setTimeout(run, 50);
+      setTimeout(run, 200);
+    });
 
+    const exportMenu = document.getElementById('exportMenu');
+    const btnExport = document.getElementById('btnExport');
+    function closeExportMenu() {
+      exportMenu.classList.add('hidden');
+      exportMenu.classList.remove('flex');
+    }
+    function openExportMenu() {
+      const rect = btnExport.getBoundingClientRect();
+      exportMenu.style.position = 'fixed';
+      exportMenu.style.left = `${Math.round(rect.right + 8)}px`;
+      exportMenu.style.top = `${Math.round(rect.top)}px`;
+      exportMenu.style.zIndex = '200';
+      exportMenu.style.background = '#1e293b';
+      exportMenu.classList.remove('hidden');
+      exportMenu.classList.add('flex');
+    }
+    btnExport.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!exportMenu.classList.contains('hidden')) closeExportMenu();
+      else openExportMenu();
+    });
+    document.addEventListener('click', (e) => {
+      if (!document.getElementById('exportMenuWrap').contains(e.target) && !exportMenu.contains(e.target)) {
+        closeExportMenu();
+      }
+    });
     document.getElementById('exportPNG').addEventListener('click', () => {
+      exportMenu.classList.add('hidden');
+      exportMenu.classList.remove('flex');
       const exportCanvas = document.createElement('canvas');
       exportCanvas.width = drawCanvas.width;
       exportCanvas.height = drawCanvas.height;
@@ -1157,6 +1545,8 @@
     });
 
     document.getElementById('exportPDF').addEventListener('click', () => {
+      exportMenu.classList.add('hidden');
+      exportMenu.classList.remove('flex');
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ orientation: 'landscape' });
 
@@ -1355,14 +1745,28 @@
       return getBoardPoint(e);
     }
 
+    function boardCssToCanvas(p) {
+      // Workspace CSS noktası → çizim tuvali piksel koordinatı (pan + dpr)
+      const rect = drawCanvas.getBoundingClientRect();
+      const ws = workspace.getBoundingClientRect();
+      const clientX = ws.left + p.x;
+      const clientY = ws.top + p.y;
+      const scaleX = drawCanvas.width / (rect.width || 1);
+      const scaleY = drawCanvas.height / (rect.height || 1);
+      return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+    }
+
     function drawInstrumentSegment(from, to) {
+      const a = boardCssToCanvas(from);
+      const b = boardCssToCanvas(to);
       drawCtx.save();
       drawCtx.beginPath();
-      drawCtx.moveTo(from.x, from.y);
-      drawCtx.lineTo(to.x, to.y);
+      drawCtx.moveTo(a.x, a.y);
+      drawCtx.lineTo(b.x, b.y);
       drawCtx.globalCompositeOperation = state.currentTool === 'eraser' ? 'destination-out' : 'source-over';
       drawCtx.strokeStyle = state.penColor;
-      drawCtx.lineWidth = state.currentTool === 'eraser' ? state.penWidth * 6 : state.penWidth;
+      const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+      drawCtx.lineWidth = (state.currentTool === 'eraser' ? state.penWidth * 6 : state.penWidth) * dpr;
       drawCtx.globalAlpha = state.currentTool === 'highlighter' ? 0.35 : 1;
       drawCtx.lineCap = 'round';
       drawCtx.lineJoin = 'round';
@@ -1377,6 +1781,7 @@
       instrumentDrawing.key = key;
       instrumentDrawing.pointerId = e.pointerId;
       instrumentDrawing.edge = null;
+      instrumentDrawing.snapshot = null;
       if (key === 'triangle45') {
         const local = getInstrumentLocalPoint(e, inst, el);
         const leftEdge = 15 / 290 * local.w;
@@ -1389,9 +1794,15 @@
         const bottomDistance = Math.hypot(local.x - clampedBottomX, local.y - bottomEdge);
         instrumentDrawing.edge = leftDistance <= bottomDistance ? 'left' : 'bottom';
       }
-      instrumentDrawing.last = key === 'protractor' ? getBoardPoint(e) : constrainedInstrumentPoint(e, key, inst, el, instrumentDrawing.edge);
+      instrumentDrawing.start = key === 'protractor' ? getBoardPoint(e) : constrainedInstrumentPoint(e, key, inst, el, instrumentDrawing.edge);
+      instrumentDrawing.last = instrumentDrawing.start;
+      if (key === 'ruler' || key === 'triangle45') {
+        try { instrumentDrawing.snapshot = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height); } catch (_) { instrumentDrawing.snapshot = null; }
+      }
       saveCanvasState();
       el.setPointerCapture(e.pointerId);
+      el.classList.add('edge-draw');
+      el.style.cursor = (typeof PEN_CURSOR !== 'undefined' ? PEN_CURSOR : 'crosshair');
       return true;
     }
 
@@ -1400,19 +1811,61 @@
       const key = instrumentDrawing.key;
       const inst = key === 'protractor' ? state.instruments.protractor : state.instruments[key];
       const next = key === 'protractor' ? getBoardPoint(e) : constrainedInstrumentPoint(e, key, inst, el, instrumentDrawing.edge);
-      drawInstrumentSegment(instrumentDrawing.last, next);
-      instrumentDrawing.last = next;
+      if (key === 'ruler' || key === 'triangle45') {
+        if (instrumentDrawing.snapshot) {
+          drawCtx.putImageData(instrumentDrawing.snapshot, 0, 0);
+        }
+        drawInstrumentSegment(instrumentDrawing.start, next);
+        instrumentDrawing.last = next;
+      } else {
+        drawInstrumentSegment(instrumentDrawing.last, next);
+        instrumentDrawing.last = next;
+      }
     }
 
     function finishInstrumentDrawing(e, el) {
       if (instrumentDrawing.active && e.pointerId === instrumentDrawing.pointerId) {
+        const key = instrumentDrawing.key;
+        if ((key === 'ruler' || key === 'triangle45') && instrumentDrawing.start && instrumentDrawing.last) {
+          if (instrumentDrawing.snapshot) {
+            drawCtx.putImageData(instrumentDrawing.snapshot, 0, 0);
+          }
+          drawInstrumentSegment(instrumentDrawing.start, instrumentDrawing.last);
+        }
         instrumentDrawing.active = false;
         instrumentDrawing.key = null;
         instrumentDrawing.pointerId = null;
         instrumentDrawing.last = null;
+        instrumentDrawing.start = null;
         instrumentDrawing.edge = null;
+        instrumentDrawing.snapshot = null;
+        el.classList.remove('edge-draw');
+        el.style.cursor = '';
         try { el.releasePointerCapture(e.pointerId); } catch (_) {}
       }
+    }
+
+    const PEN_CURSOR = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%231e293b' stroke='%23ffffff' stroke-width='1.2' d='M3 21l3.5-1 11-11-2.5-2.5-11 11L3 21z'/%3E%3Cpath fill='%23f8fafc' stroke='%231e293b' stroke-width='0.8' d='M14.5 6.5l2.5 2.5 1.8-1.8a1.5 1.5 0 0 0 0-2.1L17.4 3.7a1.5 1.5 0 0 0-2.1 0L14.5 6.5z'/%3E%3C/svg%3E\") 2 22, crosshair";
+
+    function isNearInstrumentEdge(e, key, el) {
+      if (!isCanvasDrawingTool()) return false;
+      if (key !== 'ruler' && key !== 'triangle45') return false;
+      const inst = state.instruments[key];
+      if (!inst || !inst.visible) return false;
+      const local = getInstrumentLocalPoint(e, inst, el);
+      const threshold = 28;
+      if (key === 'ruler') {
+        // Üst kenar boyunca çizgi (cetvel tick tarafı)
+        return local.y >= -threshold && local.y <= threshold + 16 && local.x >= -4 && local.x <= local.w + 4;
+      }
+      if (key === 'triangle45') {
+        const leftEdge = 15 / 290 * local.w;
+        const bottomEdge = 275 / 290 * local.h;
+        const nearLeft = Math.abs(local.x - leftEdge) <= threshold && local.y >= 0 && local.y <= bottomEdge;
+        const nearBottom = Math.abs(local.y - bottomEdge) <= threshold && local.x >= leftEdge && local.x <= local.w;
+        return nearLeft || nearBottom;
+      }
+      return false;
     }
 
     protractorEl.addEventListener('pointerdown', (e) => {
@@ -1669,7 +2122,7 @@
         drawCtx.beginPath();
         drawCtx.arc(tipX, tipY, radius, previousCompassAngle, nextCompassAngle, delta < 0);
         drawCtx.strokeStyle = state.penColor;
-        drawCtx.lineWidth = state.penWidth;
+        drawCtx.lineWidth = state.penWidth * Math.max(1, Math.min(3, window.devicePixelRatio || 1));
         drawCtx.lineCap = 'round';
         drawCtx.lineJoin = 'round';
         drawCtx.globalAlpha = state.currentTool === 'highlighter' ? 0.35 : 1.0;
@@ -1697,6 +2150,28 @@
       let isDragging = false, isRotating = false, isResizing = false;
       let startX = 0, startY = 0, startAngle = 0, startPointerAngle = 0;
       let startWidth = 0, startHeight = 0;
+
+      el.addEventListener('pointermove', (e) => {
+        if (instrumentDrawing.active || isDragging || isRotating || isResizing) return;
+        if (e.target.closest('.handle') || e.target.closest('button')) {
+          el.classList.remove('edge-draw');
+          el.style.cursor = '';
+          return;
+        }
+        if (isNearInstrumentEdge(e, key, el)) {
+          el.classList.add('edge-draw');
+          el.style.cursor = (typeof PEN_CURSOR !== 'undefined' ? PEN_CURSOR : 'crosshair');
+        } else {
+          el.classList.remove('edge-draw');
+          el.style.cursor = '';
+        }
+      });
+      el.addEventListener('pointerleave', () => {
+        if (!instrumentDrawing.active) {
+          el.classList.remove('edge-draw');
+          el.style.cursor = '';
+        }
+      });
 
       el.addEventListener('pointerdown', (e) => {
         if (beginInstrumentDrawing(e, key, el)) { e.preventDefault(); e.stopPropagation(); return; }
@@ -1805,7 +2280,48 @@
     bindToggle('btnProtractor', 'protractor', 'protractor');
     bindToggle('btnTriangle45', 'triangle45', 'triangle45');
 
+    // Geometri araçlarını hem mouse ile çift tıklamayla hem dokunmatik çift dokunuşla kapat (kırmızı çarpı yok).
+    function hideInstrument(el) {
+      const key = el.id === 'ruler' ? 'ruler' : el.id === 'protractor' ? 'protractor' : 'triangle45';
+      if (state.instruments[key]) state.instruments[key].visible = false;
+      el.classList.add('hidden');
+      const btn = document.getElementById(key === 'ruler' ? 'btnRuler' : key === 'protractor' ? 'btnProtractor' : 'btnTriangle45');
+      if (btn) btn.classList.remove('bg-indigo-600', 'text-white');
+    }
+    document.querySelectorAll('.instrument').forEach(el => {
+      el.addEventListener('dblclick', (e) => {
+        if (e.target.closest('.handle') || e.target.closest('button')) return;
+        hideInstrument(el);
+      });
+      let lastTouch = 0;
+      el.addEventListener('pointerup', (e) => {
+        if (e.pointerType !== 'touch') return;
+        if (e.target.closest('.handle') || e.target.closest('button')) return;
+        const now = Date.now();
+        if (now - lastTouch < 350) hideInstrument(el);
+        lastTouch = now;
+      });
+    });
+
+
     const btnCompass = document.getElementById('btnCompass');
+    function hideCompass() {
+      state.compass.visible = false;
+      compassContainer.classList.add('hidden');
+      btnCompass.classList.remove('bg-indigo-600', 'text-white');
+    }
+    compassContainer.addEventListener('dblclick', (e) => {
+      if (e.target.closest('#radiusHandle') || e.target.closest('#topRotationHandle')) return;
+      hideCompass();
+    });
+    let compassLastTouch = 0;
+    compassContainer.addEventListener('pointerup', (e) => {
+      if (e.pointerType !== 'touch') return;
+      if (e.target.closest('#radiusHandle') || e.target.closest('#topRotationHandle')) return;
+      const now = Date.now();
+      if (now - compassLastTouch < 350) hideCompass();
+      compassLastTouch = now;
+    });
     btnCompass.addEventListener('click', () => {
       state.compass.visible = !state.compass.visible;
       if (state.compass.visible) {

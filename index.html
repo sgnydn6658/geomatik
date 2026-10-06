@@ -2387,13 +2387,28 @@
 
       if (Math.abs(delta) > 0.00001) {
         const nextCompassAngle = previousCompassAngle + delta;
-        const tipX = state.compass.x;
-        const tipY = state.compass.y;
-        const radius = state.compass.radius;
+        // Pergel merkezi workspace CSS koordinatındadır; çizim canvas
+        // PDF/zoom/pan nedeniyle farklı bir CSS konumunda ve DPR ölçeğinde olabilir.
+        // Bu nedenle merkezi ve yarıçapı canvas piksel koordinatına dönüştür.
+        const compassCenterCanvas = boardCssToCanvas({
+          x: state.compass.x,
+          y: state.compass.y
+        });
+        const canvasRect = drawCanvas.getBoundingClientRect();
+        const canvasScaleX = drawCanvas.width / (canvasRect.width || 1);
+        const canvasScaleY = drawCanvas.height / (canvasRect.height || 1);
+        const radiusCanvas = state.compass.radius * ((canvasScaleX + canvasScaleY) / 2);
 
         drawCtx.save();
         drawCtx.beginPath();
-        drawCtx.arc(tipX, tipY, radius, previousCompassAngle, nextCompassAngle, delta < 0);
+        drawCtx.arc(
+          compassCenterCanvas.x,
+          compassCenterCanvas.y,
+          radiusCanvas,
+          previousCompassAngle,
+          nextCompassAngle,
+          delta < 0
+        );
         drawCtx.strokeStyle = state.penColor;
         drawCtx.lineWidth = state.penWidth * Math.max(1, Math.min(3, window.devicePixelRatio || 1));
         drawCtx.lineCap = 'round';

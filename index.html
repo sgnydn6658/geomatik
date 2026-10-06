@@ -1,4 +1,3 @@
-<!-- ... existing code ... -->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -152,7 +151,7 @@
       position: absolute;
       touch-action: none;
       z-index: 35;
-      filter: drop-shadow(0 12px 28px rgba(0,0,0,0.22));
+      filter: drop-shadow(0 14px 32px rgba(15, 23, 42, 0.28));
     }
 
     .img-bg-btn {
@@ -396,8 +395,8 @@
       <!-- İLETKİ / AÇIÖLÇER -->
       <div id="protractor" class="instrument glass-acrylic rounded-t-full hidden pointer-events-auto" style="touch-action:none; user-select:none;" style="width: 380px; height: 190px; top: 180px; left: 240px;">
         <canvas id="protractorCanvas" class="w-full h-full"></canvas>
-<div id="protractorResizeHandleLeft" class="handle resize-handle" style="left: -21px; bottom: -21px; width:42px; height:42px; background:#22c55e; border:3px solid white; box-shadow:0 2px 8px rgba(0,0,0,.35); touch-action:none;" title="Boyutlandır ve Döndür (180° Noktası)"></div>
-        <div id="protractorResizeHandle" class="handle resize-handle" style="right: -21px; bottom: -21px; width:42px; height:42px; background:#22c55e; border:3px solid white; box-shadow:0 2px 8px rgba(0,0,0,.35); touch-action:none;" title="Boyutlandır ve Döndür (0° Noktası)"></div>
+<div id="protractorResizeHandleLeft" class="handle resize-handle" style="left:-14px; bottom:-14px; width:28px; height:28px; background:#1e293b; border:2.5px solid #f8fafc; box-shadow:0 2px 8px rgba(0,0,0,.3); touch-action:none;" title="Boyutlandır ve Döndür (180°)"></div>
+        <div id="protractorResizeHandle" class="handle resize-handle" style="right:-14px; bottom:-14px; width:28px; height:28px; background:#1e293b; border:2.5px solid #f8fafc; box-shadow:0 2px 8px rgba(0,0,0,.3); touch-action:none;" title="Boyutlandır ve Döndür (0°)"></div>
         <button id="btnToggle360" class="absolute bottom-2 left-3 bg-slate-900/80 text-white text-[10px] px-2 py-0.5 rounded border border-slate-600 hover:bg-slate-700 shadow-sm">180° / 360°</button>
       </div>
 
@@ -410,56 +409,119 @@
 
       <!-- MEKANİK PERGEL -->
       <div id="compassContainer" class="hidden pointer-events-auto">
+        <button id="btnCompassDrawLock" type="button" title="Çizim kilidi: kilitliyken kalem sadece döner, açıkken yay çizer"
+          class="absolute z-[80] flex items-center gap-1 rounded-lg border border-slate-500/80 bg-slate-900/90 px-2 py-1 text-[10px] font-semibold text-slate-100 shadow-lg hover:bg-slate-800"
+          style="left:50%; top:8px; transform:translateX(-50%); pointer-events:auto; white-space:nowrap;">
+          <span id="compassLockIcon">🔒</span> <span id="compassLockLabel">Çizim kilitli</span>
+        </button>
 <svg id="compassSVG" width="360" height="500" viewBox="-180 -350 360 500" class="overflow-visible">
           <defs>
-            <linearGradient id="simpleMetal" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0" stop-color="#bfc2c9" />
-              <stop offset="0.5" stop-color="#f4f4f6" />
-              <stop offset="1" stop-color="#c9cbd1" />
+            <linearGradient id="legMetal" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#8b919a"/>
+              <stop offset="35%" stop-color="#e8eaed"/>
+              <stop offset="55%" stop-color="#f8f9fa"/>
+              <stop offset="100%" stop-color="#9ca3af"/>
             </linearGradient>
+            <linearGradient id="legMetalDark" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#6b7280"/>
+              <stop offset="40%" stop-color="#d1d5db"/>
+              <stop offset="100%" stop-color="#4b5563"/>
+            </linearGradient>
+            <linearGradient id="hingeGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#374151"/>
+              <stop offset="50%" stop-color="#1f2937"/>
+              <stop offset="100%" stop-color="#111827"/>
+            </linearGradient>
+            <linearGradient id="pencilBodyGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#9d174d"/>
+              <stop offset="40%" stop-color="#db2777"/>
+              <stop offset="100%" stop-color="#be185d"/>
+            </linearGradient>
+            <linearGradient id="woodGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#fde68a"/>
+              <stop offset="100%" stop-color="#d97706"/>
+            </linearGradient>
+            <linearGradient id="chromeGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#f1f5f9"/>
+              <stop offset="45%" stop-color="#94a3b8"/>
+              <stop offset="100%" stop-color="#64748b"/>
+            </linearGradient>
+            <filter id="softShadow" x="-40%" y="-40%" width="180%" height="180%">
+              <feDropShadow dx="0" dy="3" stdDeviation="3.5" flood-color="#0f172a" flood-opacity="0.28"/>
+            </filter>
+            <filter id="tinyShadow" x="-50%" y="-50%" width="200%" height="200%">
+              <feDropShadow dx="0" dy="1.5" stdDeviation="1.2" flood-color="#0f172a" flood-opacity="0.35"/>
+            </filter>
           </defs>
 
-          <circle id="compassGuideCircle" cx="0" cy="0" r="100" stroke="#2563eb" stroke-dasharray="4,4" stroke-width="1.5" fill="none" opacity="0" />
-          <line id="compassRadiusLine" x1="0" y1="0" x2="100" y2="0" stroke="#2563eb" stroke-dasharray="3,3" stroke-width="1.5" opacity="0" />
-          <g id="compassInfoBadge" opacity="0" transform="translate(50, -18)">
-            <rect x="-42" y="-12" width="84" height="24" rx="12" fill="#0f172a" opacity="0.9" />
-            <text id="compassRadiusText" x="0" y="4" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">5.0 cm</text>
+          <!-- Guides (shown while adjusting) -->
+          <circle id="compassGuideCircle" cx="0" cy="0" r="100" stroke="#2563eb" stroke-dasharray="6 5" stroke-width="1.75" fill="rgba(37,99,235,0.05)" opacity="0"/>
+          <line id="compassRadiusLine" x1="0" y1="0" x2="100" y2="0" stroke="#2563eb" stroke-dasharray="4 3" stroke-width="1.5" opacity="0"/>
+          <g id="compassInfoBadge" opacity="0" transform="translate(50, -20)">
+            <rect x="-50" y="-14" width="100" height="28" rx="14" fill="#0f172a" opacity="0.94"/>
+            <rect x="-50" y="-14" width="100" height="28" rx="14" fill="none" stroke="#3b82f6" stroke-width="1.25" opacity="0.8"/>
+            <text id="compassRadiusText" x="0" y="5" fill="#f8fafc" font-size="12" font-weight="700" text-anchor="middle" font-family="Inter, system-ui, sans-serif">5.0 cm</text>
           </g>
 
-          <g id="compassBody" stroke-linejoin="round" stroke-linecap="round">
-            <path id="legNeedle" d="M 60,-180 L 0,0" stroke="#d5d5da" stroke-width="12" fill="none" />
-            <path id="needleHighlight" d="M 58,-168 L 2,-12" stroke="#eeeeF1" stroke-width="3" fill="none" />
-            <path d="M -4,-2 L 0,14 L 4,-2 Z" fill="#34343e" />
+          <g id="compassBody" stroke-linejoin="round" stroke-linecap="round" filter="url(#softShadow)">
+            <!-- Needle leg -->
+            <path id="legNeedle" d="M 60,-180 L 0,0" stroke="url(#legMetal)" stroke-width="13" fill="none"/>
+            <path id="needleHighlight" d="M 58,-168 L 2,-12" stroke="#ffffff" stroke-width="2.5" fill="none" opacity="0.55"/>
+            <!-- Needle tip -->
+            <path d="M -5,-1 L 0,16 L 5,-1 Z" fill="#1e293b"/>
+            <path d="M -2,8 L 0,16 L 2,8 Z" fill="#0f172a"/>
 
-            <path id="legPencil" d="M 60,-180 L 120,0" stroke="#d5d5da" stroke-width="12" fill="none" />
-            <path id="pencilHighlight" d="M 62,-168 L 117,-12" stroke="#eeeeF1" stroke-width="3" fill="none" />
+            <!-- Pencil leg -->
+            <path id="legPencil" d="M 60,-180 L 120,0" stroke="url(#legMetal)" stroke-width="13" fill="none"/>
+            <path id="pencilHighlight" d="M 62,-168 L 117,-12" stroke="#ffffff" stroke-width="2.5" fill="none" opacity="0.55"/>
 
+            <!-- Cross bar / thumb screw -->
             <g id="thumbScrewGroup">
-              <path id="screwShaft" d="M 30,-108 L 90,-108" stroke="#d5d5da" stroke-width="13" fill="none" />
-              <path id="screwShaftHighlight" d="M 32,-108 L 88,-108" stroke="#f4f4f6" stroke-width="4" fill="none" />
-              <circle id="screwNut" cx="60" cy="-108" r="6" fill="#34343e" />
-              <circle id="screwNutInner" cx="60" cy="-108" r="2.2" fill="#d5d5da" />
+              <path id="screwShaft" d="M 30,-108 L 90,-108" stroke="url(#legMetalDark)" stroke-width="11" fill="none"/>
+              <path id="screwShaftHighlight" d="M 32,-108 L 88,-108" stroke="#f8fafc" stroke-width="3" fill="none" opacity="0.45"/>
+              <circle id="screwNut" cx="60" cy="-108" r="7.5" fill="url(#hingeGrad)" filter="url(#tinyShadow)"/>
+              <circle id="screwNutInner" cx="60" cy="-108" r="2.8" fill="#cbd5e1"/>
+              <circle cx="60" cy="-108" r="1.1" fill="#475569"/>
             </g>
 
-            <g id="pencilAssembly" transform="translate(120, 0)">
-              <rect x="-10" y="-44" width="20" height="37" fill="#c21868" />
-              <rect x="-10" y="-44" width="5" height="37" fill="#a90e58" />
-              <path d="M -10,-7 L 0,13 L 10,-7 Z" fill="#f2d8a6" />
-              <path d="M -3,5 L 0,13 L 3,5 Z" fill="#c21868" />
+            <!-- Pencil head -->
+            <g id="pencilAssembly" class="cursor-grab active:cursor-grabbing" transform="translate(120, 0)" style="pointer-events:all;">
+              <rect x="-20" y="-54" width="40" height="76" fill="transparent"/>
+              <!-- barrel -->
+              <rect x="-12" y="-48" width="24" height="42" rx="3" fill="url(#pencilBodyGrad)" filter="url(#tinyShadow)"/>
+              <rect x="-12" y="-48" width="7" height="42" rx="2" fill="#ffffff" opacity="0.18"/>
+              <!-- ferrule -->
+              <rect x="-13" y="-10" width="26" height="8" rx="1.5" fill="url(#chromeGrad)"/>
+              <line x1="-11" y1="-7" x2="11" y2="-7" stroke="#e2e8f0" stroke-width="0.8" opacity="0.7"/>
+              <line x1="-11" y1="-4" x2="11" y2="-4" stroke="#64748b" stroke-width="0.6" opacity="0.5"/>
+              <!-- wood cone -->
+              <path d="M -12,-2 L 0,18 L 12,-2 Z" fill="url(#woodGrad)"/>
+              <path d="M -5,8 L 0,18 L 5,8 Z" fill="#334155"/>
+              <path d="M -2,13 L 0,18 L 2,13 Z" fill="#0f172a"/>
+              <!-- active ring -->
+              <circle id="pencilActiveRing" cx="0" cy="2" r="18" fill="none" stroke="#2563eb" stroke-width="2" stroke-dasharray="4 3" opacity="0"/>
             </g>
 
-            <circle id="compassPivotOuter" cx="60" cy="-180" r="9" fill="#34343e" />
-            <circle id="compassPivotMiddle" cx="60" cy="-180" r="4.5" fill="#d7d8de" />
-            <circle id="compassPivotInner" cx="60" cy="-180" r="1.6" fill="#34343e" />
+            <!-- Pivot / hinge head -->
+            <circle id="compassPivotOuter" cx="60" cy="-180" r="11" fill="url(#hingeGrad)" filter="url(#tinyShadow)"/>
+            <circle id="compassPivotMiddle" cx="60" cy="-180" r="5.5" fill="#e2e8f0"/>
+            <circle id="compassPivotInner" cx="60" cy="-180" r="2" fill="#1e293b"/>
+
+            <!-- Top rotation handle (draws arcs) -->
             <g id="topRotationHandle" class="cursor-grab active:cursor-grabbing">
-              <rect x="42" y="-206" width="36" height="40" rx="4" fill="#34343e" />
-              <rect x="52" y="-224" width="16" height="22" rx="3" fill="#34343e" />
-              <circle cx="60" cy="-180" r="4.5" fill="#d7d8de" />
+              <rect x="40" y="-214" width="40" height="44" rx="6" fill="url(#hingeGrad)" filter="url(#tinyShadow)"/>
+              <rect x="50" y="-232" width="20" height="24" rx="4" fill="url(#hingeGrad)"/>
+              <rect x="44" y="-208" width="32" height="6" rx="2" fill="#475569" opacity="0.5"/>
+              <rect x="44" y="-198" width="32" height="6" rx="2" fill="#475569" opacity="0.5"/>
+              <rect x="44" y="-188" width="32" height="6" rx="2" fill="#475569" opacity="0.5"/>
+              <circle cx="60" cy="-180" r="5" fill="#e2e8f0"/>
+              <circle cx="60" cy="-180" r="2" fill="#1e293b"/>
             </g>
 
+            <!-- Radius handle (invisible until adjusting) -->
             <g id="radiusHandle" class="cursor-ew-resize" opacity="0">
-              <circle id="radiusHandleCircle" cx="120" cy="0" r="10" fill="#ffffff" stroke="#2563eb" stroke-width="3" />
-              <circle cx="120" cy="0" r="3" fill="#2563eb" />
+              <circle id="radiusHandleCircle" cx="120" cy="0" r="12" fill="#ffffff" stroke="#2563eb" stroke-width="2.5" filter="url(#tinyShadow)"/>
+              <circle cx="120" cy="0" r="3.5" fill="#2563eb"/>
             </g>
           </g>
         </svg>
@@ -591,7 +653,8 @@
         y: 300,
         radius: 150,
         angle: 0,
-        visible: false
+        visible: false,
+        drawLocked: true
       }
     };
 
@@ -1604,73 +1667,109 @@
     function renderProtractorGraphics() {
       const c = document.getElementById('protractorCanvas');
       const prot = state.instruments.protractor;
-      
       const r = prot.radius;
-      const width = r * 2;
-      const height = prot.mode360 ? r * 2 : r;
-      
+      const width = Math.round(r * 2);
+      const height = prot.mode360 ? Math.round(r * 2) : Math.round(r);
       c.width = width;
       c.height = height;
       const parentEl = document.getElementById('protractor');
       parentEl.style.width = `${width}px`;
       parentEl.style.height = `${height}px`;
+      parentEl.style.background = 'transparent';
+      parentEl.style.backdropFilter = 'none';
+      parentEl.style.webkitBackdropFilter = 'none';
+      parentEl.style.border = 'none';
+      parentEl.style.boxShadow = 'none';
+      parentEl.classList.remove('glass-acrylic');
 
       const ctx = c.getContext('2d');
-      ctx.clearRect(0, 0, c.width, c.height);
-
-      const cx = r, cy = prot.mode360 ? r : r;
-
-      ctx.beginPath();
-      if (prot.mode360) {
-        ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      } else {
-        ctx.arc(cx, cy, r, Math.PI, 0, false);
-      }
-      ctx.lineWidth = 1.5;
-      ctx.strokeStyle = '#0f172a';
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.arc(cx, cy, r * 0.45, prot.mode360 ? 0 : Math.PI, prot.mode360 ? Math.PI * 2 : 0, false);
-      ctx.strokeStyle = 'rgba(15, 23, 42, 0.4)';
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.arc(cx, cy, 5, 0, Math.PI * 2);
-      ctx.fillStyle = '#dc2626';
-      ctx.fill();
-
-      ctx.fillStyle = '#0f172a';
-      ctx.font = 'bold 9px Inter';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-
+      ctx.clearRect(0, 0, width, height);
+      const cx = r;
+      const cy = prot.mode360 ? r : r;
       const maxDeg = prot.mode360 ? 360 : 180;
 
-      for (let deg = 0; deg <= maxDeg; deg += 1) {
-        const rad = (180 - deg) * Math.PI / 180;
-        let tickLen = 6;
+      // Hafif dolgu (Polypad benzeri açık gri, yarı saydam)
+      ctx.beginPath();
+      if (prot.mode360) {
+        ctx.arc(cx, cy, r - 0.5, 0, Math.PI * 2);
+      } else {
+        ctx.moveTo(cx - r + 0.5, cy);
+        ctx.arc(cx, cy, r - 0.5, Math.PI, 0, false);
+        ctx.closePath();
+      }
+      ctx.fillStyle = 'rgba(241, 245, 249, 0.55)';
+      ctx.fill();
+      ctx.lineWidth = 1.25;
+      ctx.strokeStyle = 'rgba(51, 65, 85, 0.55)';
+      ctx.stroke();
 
+      // Taban çizgisi
+      if (!prot.mode360) {
+        ctx.beginPath();
+        ctx.moveTo(cx - r + 1, cy);
+        ctx.lineTo(cx + r - 1, cy);
+        ctx.lineWidth = 1.25;
+        ctx.strokeStyle = 'rgba(51, 65, 85, 0.7)';
+        ctx.stroke();
+      }
+
+      // Her 10° radyal çizgi (merkeze doğru)
+      ctx.strokeStyle = 'rgba(71, 85, 105, 0.45)';
+      ctx.lineWidth = 1;
+      for (let deg = 0; deg <= maxDeg; deg += 10) {
+        if (!prot.mode360 && (deg === 0 || deg === 180)) continue;
+        const rad = deg * Math.PI / 180;
+        const cos = Math.cos(rad), sin = Math.sin(rad);
+        ctx.beginPath();
+        ctx.moveTo(cx + 8 * cos, cy - 8 * sin);
+        ctx.lineTo(cx + (r - 18) * cos, cy - (r - 18) * sin);
+        ctx.stroke();
+      }
+
+      // Dış kenar tick'leri (1°)
+      for (let deg = 0; deg <= maxDeg; deg += 1) {
+        const rad = deg * Math.PI / 180;
+        const cos = Math.cos(rad), sin = Math.sin(rad);
+        let tickLen = 5;
         if (deg % 10 === 0) tickLen = 16;
         else if (deg % 5 === 0) tickLen = 10;
-
-        const x1 = cx + r * Math.cos(rad);
-        const y1 = cy - r * Math.sin(rad);
-        const x2 = cx + (r - tickLen) * Math.cos(rad);
-        const y2 = cy - (r - tickLen) * Math.sin(rad);
-
         ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
+        ctx.moveTo(cx + (r - 1) * cos, cy - (r - 1) * sin);
+        ctx.lineTo(cx + (r - 1 - tickLen) * cos, cy - (r - 1 - tickLen) * sin);
+        ctx.lineWidth = deg % 10 === 0 ? 1.35 : 0.9;
+        ctx.strokeStyle = 'rgba(30, 41, 59, 0.85)';
         ctx.stroke();
+      }
 
-        if (deg % 10 === 0 && deg < 360) {
-          const textRad = (180 - deg) * Math.PI / 180;
-          const tx = cx + (r - 26) * Math.cos(textRad);
-          const ty = cy - (r - 26) * Math.sin(textRad);
-          ctx.fillText(deg.toString(), tx, ty);
+      // Çift ölçek etiketleri
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      for (let deg = 0; deg <= maxDeg; deg += 10) {
+        if (deg === 360) continue;
+        const rad = deg * Math.PI / 180;
+        const cos = Math.cos(rad), sin = Math.sin(rad);
+
+        // Dış ölçek (siyah): 0 sağ → 180 sol
+        const outerR = r - 28;
+        ctx.fillStyle = '#0f172a';
+        ctx.font = `bold ${Math.max(9, Math.round(r / 18))}px Inter, system-ui, sans-serif`;
+        ctx.fillText(String(deg), cx + outerR * cos, cy - outerR * sin);
+
+        // İç ölçek (çift taraflı): 180 sağ → 0 sol
+        if (!prot.mode360 || deg <= 180) {
+          const innerLabel = prot.mode360 ? ((360 - deg) % 360) : (180 - deg);
+          const innerR = r * 0.52;
+          ctx.fillStyle = '#334155';
+          ctx.font = `bold ${Math.max(8, Math.round(r / 22))}px Inter, system-ui, sans-serif`;
+          ctx.fillText(String(innerLabel), cx + innerR * cos, cy - innerR * sin);
         }
       }
+
+      // Merkez siyah nokta (Polypad)
+      ctx.beginPath();
+      ctx.arc(cx, cy, Math.max(5, r * 0.035), 0, Math.PI * 2);
+      ctx.fillStyle = '#1e293b';
+      ctx.fill();
     }
 
     document.getElementById('btnToggle360').addEventListener('click', () => {
@@ -1684,6 +1783,22 @@
       const cy = p.mode360 ? p.radius : p.radius;
       el.style.transform = `translate3d(${p.x - p.radius}px, ${p.y - cy}px, 0px) rotate(${p.angle}deg)`;
       el.style.transformOrigin = `${p.radius}px ${cy}px`;
+      // Tutamaçları taban uçlarına (0° / 180°) hizala
+      const hl = document.getElementById('protractorResizeHandleLeft');
+      const hr = document.getElementById('protractorResizeHandle');
+      const hs = 28;
+      if (hl) {
+        hl.style.left = `${-hs / 2}px`;
+        hl.style.bottom = p.mode360 ? `${p.radius - hs / 2}px` : `${-hs / 2}px`;
+        hl.style.top = 'auto';
+        hl.style.right = 'auto';
+      }
+      if (hr) {
+        hr.style.right = `${-hs / 2}px`;
+        hr.style.left = 'auto';
+        hr.style.bottom = p.mode360 ? `${p.radius - hs / 2}px` : `${-hs / 2}px`;
+        hr.style.top = 'auto';
+      }
     }
 
     // Açıölçer Etkileşimleri
@@ -2036,7 +2151,7 @@
     let compassDragStart = { x: 0, y: 0 };
 
     compassContainer.addEventListener('pointerdown', (e) => {
-      if (e.target.closest('#topRotationHandle') || e.target.closest('#radiusHandle')) return;
+      if (e.target.closest('#topRotationHandle') || e.target.closest('#radiusHandle') || e.target.closest('#pencilAssembly')) return;
       e.stopPropagation();
       isDraggingCompass = true;
       compassDragStart = { x: e.clientX - state.compass.x, y: e.clientY - state.compass.y };
@@ -2061,6 +2176,13 @@
     radiusHandle.addEventListener('pointerdown', (e) => {
       e.stopPropagation();
       isAdjustingCompassRadius = true;
+      if (typeof setCompassGuidesVisible === 'function') setCompassGuidesVisible(true);
+      else {
+        compassGuideCircle.setAttribute('opacity', '1');
+        compassRadiusLine.setAttribute('opacity', '1');
+        compassInfoBadge.setAttribute('opacity', '1');
+        radiusHandle.setAttribute('opacity', '1');
+      }
       radiusHandle.setPointerCapture(e.pointerId);
     });
 
@@ -2080,8 +2202,159 @@
 
     radiusHandle.addEventListener('pointerup', (e) => {
       isAdjustingCompassRadius = false;
+      if (typeof setCompassGuidesVisible === 'function') setCompassGuidesVisible(false);
+      else {
+        compassGuideCircle.setAttribute('opacity', '0');
+        compassRadiusLine.setAttribute('opacity', '0');
+        compassInfoBadge.setAttribute('opacity', '0');
+        radiusHandle.setAttribute('opacity', '0');
+      }
       try { radiusHandle.releasePointerCapture(e.pointerId); } catch(err){}
     });
+
+    // Kalem: basılı tutup sürükle = döndür + açıklık; yay çizimi yalnızca kilit açıkken
+    let isRotatingCompassOnly = false;
+    let pencilPrevAngleRad = null;
+    let pencilPrevTipCanvas = null;
+
+    function setCompassGuidesVisible(visible) {
+      const o = visible ? '1' : '0';
+      compassGuideCircle.setAttribute('opacity', o);
+      compassRadiusLine.setAttribute('opacity', o);
+      compassInfoBadge.setAttribute('opacity', o);
+      const ring = document.getElementById('pencilActiveRing');
+      if (ring) ring.setAttribute('opacity', visible ? '0.9' : '0');
+      radiusHandle.setAttribute('opacity', visible ? '1' : '0');
+    }
+
+    function compassCenterToCanvas() {
+      return boardCssToCanvas({ x: state.compass.x, y: state.compass.y });
+    }
+
+    function compassRadiusToCanvas(rCss) {
+      const rect = drawCanvas.getBoundingClientRect();
+      const scaleX = drawCanvas.width / (rect.width || 1);
+      const scaleY = drawCanvas.height / (rect.height || 1);
+      return rCss * ((Math.abs(scaleX) + Math.abs(scaleY)) / 2 || 1);
+    }
+
+    function strokeCompassStyle() {
+      const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+      drawCtx.strokeStyle = state.penColor;
+      drawCtx.lineWidth = (state.currentTool === 'eraser' ? state.penWidth * 6 : state.currentTool === 'highlighter' ? state.penWidth * 4 : state.penWidth) * dpr;
+      drawCtx.lineCap = 'round';
+      drawCtx.lineJoin = 'round';
+      drawCtx.globalAlpha = state.currentTool === 'highlighter' ? 0.35 : 1.0;
+      drawCtx.globalCompositeOperation = state.currentTool === 'eraser' ? 'destination-out' : 'source-over';
+    }
+
+    pencilAssembly.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      isRotatingCompassOnly = true;
+      setCompassGuidesVisible(true);
+      saveCanvasState();
+      const ang = Math.atan2(
+        (e.clientY - workspace.getBoundingClientRect().top) - state.compass.y,
+        (e.clientX - workspace.getBoundingClientRect().left) - state.compass.x
+      );
+      pencilPrevAngleRad = ang;
+      const tip = boardCssToCanvas({
+        x: state.compass.x + state.compass.radius * Math.cos(ang),
+        y: state.compass.y + state.compass.radius * Math.sin(ang)
+      });
+      pencilPrevTipCanvas = tip;
+      pencilAssembly.setPointerCapture(e.pointerId);
+    });
+
+    pencilAssembly.addEventListener('pointermove', (e) => {
+      if (!isRotatingCompassOnly) return;
+      const rect = workspace.getBoundingClientRect();
+      const px = e.clientX - rect.left;
+      const py = e.clientY - rect.top;
+      const dx = px - state.compass.x;
+      const dy = py - state.compass.y;
+      const newRadius = Math.max(30, Math.min(300, Math.hypot(dx, dy)));
+      const newAngleRad = Math.atan2(dy, dx);
+
+      // Yay çiz yalnızca kilit açıkken
+      if (!state.compass.drawLocked && pencilPrevAngleRad !== null && isCanvasDrawingTool()) {
+        let delta = newAngleRad - pencilPrevAngleRad;
+        if (delta > Math.PI) delta -= Math.PI * 2;
+        if (delta < -Math.PI) delta += Math.PI * 2;
+        if (Math.abs(delta) > 0.00001) {
+          const center = compassCenterToCanvas();
+          // Yarıçap değişiyorsa iki ucu birleştiren kısa segment; sabitse gerçek yay
+          const rAvgCss = (state.compass.radius + newRadius) / 2;
+          const rCanvas = compassRadiusToCanvas(rAvgCss);
+          drawCtx.save();
+          strokeCompassStyle();
+          drawCtx.beginPath();
+          if (Math.abs(newRadius - state.compass.radius) < 1.5) {
+            drawCtx.arc(center.x, center.y, rCanvas, pencilPrevAngleRad, newAngleRad, delta < 0);
+          } else {
+            // Açıklık da değişiyorsa kalem ucunun izini çiz (spiral benzeri)
+            const tipNew = boardCssToCanvas({
+              x: state.compass.x + newRadius * Math.cos(newAngleRad),
+              y: state.compass.y + newRadius * Math.sin(newAngleRad)
+            });
+            if (pencilPrevTipCanvas) {
+              drawCtx.moveTo(pencilPrevTipCanvas.x, pencilPrevTipCanvas.y);
+              drawCtx.lineTo(tipNew.x, tipNew.y);
+            }
+            pencilPrevTipCanvas = tipNew;
+          }
+          drawCtx.stroke();
+          drawCtx.restore();
+          if (Math.abs(newRadius - state.compass.radius) < 1.5) {
+            pencilPrevTipCanvas = boardCssToCanvas({
+              x: state.compass.x + newRadius * Math.cos(newAngleRad),
+              y: state.compass.y + newRadius * Math.sin(newAngleRad)
+            });
+          }
+        }
+      }
+
+      state.compass.radius = newRadius;
+      state.compass.angle = newAngleRad * 180 / Math.PI;
+      pencilPrevAngleRad = newAngleRad;
+      updateCompassTransform();
+    });
+
+    function stopPencilOnlyRotation(e) {
+      isRotatingCompassOnly = false;
+      pencilPrevAngleRad = null;
+      pencilPrevTipCanvas = null;
+      setCompassGuidesVisible(false);
+      try { pencilAssembly.releasePointerCapture(e.pointerId); } catch(err) {}
+    }
+    pencilAssembly.addEventListener('pointerup', stopPencilOnlyRotation);
+    pencilAssembly.addEventListener('pointercancel', stopPencilOnlyRotation);
+
+
+    // Pergel çizim kilidi (varsayılan: kilitli = yazmaz, sadece döner)
+    const btnCompassDrawLock = document.getElementById('btnCompassDrawLock');
+    function syncCompassLockUI() {
+      const locked = !!state.compass.drawLocked;
+      const icon = document.getElementById('compassLockIcon');
+      const label = document.getElementById('compassLockLabel');
+      if (icon) icon.textContent = locked ? '🔒' : '✏️';
+      if (label) label.textContent = locked ? 'Çizim kilitli' : 'Çizim açık';
+      if (btnCompassDrawLock) {
+        btnCompassDrawLock.style.background = locked ? 'rgba(15,23,42,0.92)' : 'rgba(22,163,74,0.92)';
+        btnCompassDrawLock.style.borderColor = locked ? 'rgba(100,116,139,0.8)' : 'rgba(74,222,128,0.9)';
+      }
+    }
+    if (btnCompassDrawLock) {
+      btnCompassDrawLock.addEventListener('pointerdown', (e) => { e.stopPropagation(); });
+      btnCompassDrawLock.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        state.compass.drawLocked = !state.compass.drawLocked;
+        syncCompassLockUI();
+      });
+      syncCompassLockUI();
+    }
 
     let isRotatingCompassAndDrawing = false;
     let previousPointerAngle = null;

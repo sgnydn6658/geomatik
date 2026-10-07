@@ -21,19 +21,10 @@
       font-family: 'Inter', sans-serif;
       user-select: none;
       -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
       overflow: hidden;
       background-color: #ffffff;
       color: #1e293b;
-      touch-action: none; /* Akıllı tahta: kaydırma/zoom jestlerini kapat */
-      -ms-touch-action: none;
-      overscroll-behavior: none;
-    }
-    /* Akıllı tahta: tüm etkileşimli katmanlarda ikincil dokunuşları bastır */
-    #drawCanvas, #instrumentsLayer, #imageLayer, #workspace, .instrument, #compassContainer {
-      touch-action: none;
-      -ms-touch-action: none;
+      touch-action: none; /* Akıllı tahta çoklu dokunma ve kaydırma çakışmalarını önler */
     }
 
     /* Tahta Arka Planı ve Izgaralar */
@@ -629,23 +620,22 @@
       
       // Çizim Motoru
       isDrawing: false,
-      activePointerId: null, // Akıllı tahta: tek parmak kilidi — başka yere dokununca çizim bozulmaz
-      globalPointerLock: null, // Tüm uygulama genelinde tek aktif pointer
+      activePointerId: null, // Akıllı tahta çoklu dokunma kilitlenmesini önler
       currentTool: 'pen',
       isPanning: false,
       panStart: null,
       panOffsets: { pdfCanvas: [0, 0], drawCanvas: [0, 0], imageLayer: [0, 0], instrumentsLayer: [0, 0] },
       selectedShape: 'free',
       penColor: '#000000',
-      penWidth: 4, // Akıllı tahtada parmakla daha rahat görünmesi için varsayılan 4
+      penWidth: 4, // Akıllı tahtada parmakla daha rahat görünmesi için varsayılan 4 yapıldı
       
       // Metin Ayarları
       isBold: false,
       isItalic: false,
       pendingTextPos: null,
 
-      // Geçmiş Limit (akıllı tahtada bellek için biraz düşürüldü)
-      maxHistory: 20,
+      // Geçmiş Limit
+      maxHistory: 30,
       shapeStart: null,
       anglePoints: [],
       polygonSides: 5,
@@ -785,14 +775,14 @@
     }
 
     function applyDrawCanvasGeometry(x0, y0, cssW, cssH, oldOrigin, oldCanvas, pdfScaleInfo) {
-      // Akıllı tahta: büyük alanda dpr düşür → bellek ve kasma azalır, yazı net kalır
-      let dpr = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
-      while (cssW * dpr > 12288 || cssH * dpr > 12288) {
+      // Büyük alanda dpr'yi düşürerek belleği koru; yazma alanı yine PDF kadar genişler
+      let dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+      while (cssW * dpr > 16384 || cssH * dpr > 16384) {
         if (dpr <= 1) break;
         dpr = Math.max(1, dpr - 0.5);
       }
-      if (cssW * dpr > 12288) { cssW = Math.floor(12288 / dpr); }
-      if (cssH * dpr > 12288) { cssH = Math.floor(12288 / dpr); }
+      if (cssW * dpr > 16384) { cssW = Math.floor(16384 / dpr); }
+      if (cssH * dpr > 16384) { cssH = Math.floor(16384 / dpr); }
 
       const bufW = Math.max(1, Math.round(cssW * dpr));
       const bufH = Math.max(1, Math.round(cssH * dpr));
@@ -1209,94 +1199,32 @@
       textInputBox.classList.add('hidden');
     });
 
-    // Çizim Motoru (Pointer Events — Akıllı Tahta: tek parmak kilidi + pürüzsüz yazı)
+    // Çizim Motoru (Pointer Events ile Akıllı Tahta Uyumlu)
     let lastX = 0, lastY = 0;
-    let midX = 0, midY = 0; // Quadratic smooth için orta nokta
     let snapshot = null;
-    let freehandRaf = null;
-    let pendingFreePos = null;
-    let strokeStarted = false;
-
-    // Global tek-parmak kilidi: tahtanın başka yerine dokununca mevcut çizim/araç bozulmaz
-    function acquirePointerLock(pointerId) {
-      if (state.globalPointerLock !== null && state.globalPointerLock !== pointerId) return false;
-      state.globalPointerLock = pointerId;
-      return true;
-    }
-    function releasePointerLock(pointerId) {
-      if (state.globalPointerLock === pointerId) state.globalPointerLock = null;
-    }
-    function isPointerLocked(pointerId) {
-      return state.globalPointerLock === null || state.globalPointerLock === pointerId;
-    }
 
     function getPos(e) {
       const rect = drawCanvas.getBoundingClientRect();
-      const scaleX = drawCanvas.width / (rect.width || 1);
-      const scaleY = drawCanvas.height / (rect.height || 1);
-      // Alt-piksel hassasiyet: yuvarlama yapmadan float kullan
-      return {
-        x: (e.clientX - rect.left) * scaleX,
-        y: (e.clientY - rect.top) * scaleY,
-        pressure: (typeof e.pressure === 'number' && e.pressure > 0) ? e.pressure : 0.5
-      };
+      const scaleX = drawCanvas.width / rect.width || 1;
+      const scaleY = drawCanvas.height / rect.height || 1;
+      return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
     }
 
-    function canvasDpr() {
-      // Büyük tuvalde bellek/kasma için dpr'yi düşür; yazı kalitesi korunur
-      let dpr = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
-      if (drawCanvas.width > 8000 || drawCanvas.height > 8000) dpr = Math.min(dpr, 1.5);
-      if (drawCanvas.width > 12000 || drawCanvas.height > 12000) dpr = 1;
-      return dpr;
-    }
-
-    function setDrawingStyle(pressure) {
-      const dpr = canvasDpr();
-      const p = (typeof pressure === 'number') ? Math.max(0.35, Math.min(1.2, pressure * 1.4 + 0.3)) : 1;
+    function setDrawingStyle() {
+      const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
       drawCtx.lineCap = 'round';
       drawCtx.lineJoin = 'round';
       drawCtx.imageSmoothingEnabled = true;
       drawCtx.globalAlpha = state.currentTool === 'highlighter' ? 0.35 : 1;
       drawCtx.globalCompositeOperation = state.currentTool === 'eraser' ? 'destination-out' : 'source-over';
       drawCtx.strokeStyle = state.penColor;
-      const base = state.currentTool === 'eraser' ? state.penWidth * 6
-        : state.currentTool === 'highlighter' ? state.penWidth * 4
-        : state.penWidth;
-      drawCtx.lineWidth = base * dpr * p;
-    }
-
-    function flushFreehandStroke() {
-      freehandRaf = null;
-      if (!pendingFreePos || !state.isDrawing) return;
-      const pos = pendingFreePos;
-      pendingFreePos = null;
-
-      // Quadratic mid-point: pürüzsüz, kesiksiz yazı (parmak titreşimini yumuşatır)
-      const mx = (lastX + pos.x) / 2;
-      const my = (lastY + pos.y) / 2;
-      setDrawingStyle(pos.pressure);
-      drawCtx.beginPath();
-      if (!strokeStarted) {
-        drawCtx.moveTo(lastX, lastY);
-        strokeStarted = true;
-      } else {
-        drawCtx.moveTo(midX, midY);
-      }
-      drawCtx.quadraticCurveTo(lastX, lastY, mx, my);
-      drawCtx.stroke();
-      drawCtx.globalAlpha = 1.0;
-      midX = mx;
-      midY = my;
-      lastX = pos.x;
-      lastY = pos.y;
+      drawCtx.lineWidth = (state.currentTool === 'eraser' ? state.penWidth * 6 : state.currentTool === 'highlighter' ? state.penWidth * 4 : state.penWidth) * dpr;
     }
 
     drawCanvas.addEventListener('pointerdown', (e) => {
-      // Başka parmak zaten aktifse tamamen yok say (akıllı tahta ikincil dokunuş)
-      if (state.activePointerId !== null || !acquirePointerLock(e.pointerId)) return;
+      if (state.activePointerId !== null) return; // Başka parmak çizim yapıyorsa engelle
       state.activePointerId = e.pointerId;
-      try { drawCanvas.setPointerCapture(e.pointerId); } catch (_) {}
-      e.preventDefault();
+      drawCanvas.setPointerCapture(e.pointerId);
 
       let pos = getPos(e);
 
@@ -1304,27 +1232,22 @@
         state.isPanning = true;
         state.panStart = { x: e.clientX, y: e.clientY };
         drawCanvas.style.cursor = 'grabbing';
+        e.preventDefault();
         return;
       }
 
       if (state.selectedShape === 'text') {
-        // Metin kutusu CSS konumuna göre (canvas buffer değil)
-        const rect = drawCanvas.getBoundingClientRect();
-        const ws = workspace.getBoundingClientRect();
         state.pendingTextPos = pos;
-        textInputBox.style.left = `${e.clientX - ws.left}px`;
-        textInputBox.style.top = `${e.clientY - ws.top}px`;
+        textInputBox.style.left = `${pos.x}px`;
+        textInputBox.style.top = `${pos.y}px`;
         textInputBox.classList.remove('hidden');
         textContent.focus();
-        // Metin için kilidi serbest bırak (kutu etkileşimi)
-        releasePointerLock(e.pointerId);
-        state.activePointerId = null;
         return;
       } else {
         textInputBox.classList.add('hidden');
       }
 
-      // Açı: 3 ayrı dokunuş
+      // Açı 3 ayrı dokunuşla oluşturulur: ışın üzerindeki nokta → köşe → diğer ışın üzerindeki nokta.
       if (state.selectedShape === 'angle') {
         state.anglePoints.push(pos);
         if (state.anglePoints.length === 3) {
@@ -1333,8 +1256,6 @@
           state.anglePoints = [];
         }
         state.isDrawing = false;
-        releasePointerLock(e.pointerId);
-        state.activePointerId = null;
         return;
       }
 
@@ -1342,29 +1263,17 @@
       state.isDrawing = true;
       lastX = pos.x;
       lastY = pos.y;
-      midX = pos.x;
-      midY = pos.y;
-      strokeStarted = false;
       state.shapeStart = pos;
-      pendingFreePos = null;
 
-      // Şekil önizlemesi için snapshot (sadece şekil modunda — kasma önleme)
-      if (state.selectedShape !== 'free' && state.currentTool !== 'eraser') {
-        try {
-          snapshot = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
-        } catch (err) {
-          snapshot = null;
-        }
-      } else {
+      try {
+        snapshot = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
+      } catch (err) {
         snapshot = null;
       }
     });
 
     drawCanvas.addEventListener('pointermove', (e) => {
-      if (e.pointerId !== state.activePointerId) return; // İkincil parmak: yok say
-      e.preventDefault();
-
-      if (state.isPanning) {
+      if (state.isPanning && e.pointerId === state.activePointerId) {
         const dx = e.clientX - state.panStart.x;
         const dy = e.clientY - state.panStart.y;
         ['pdfCanvas', 'drawCanvas', 'imageLayer', 'instrumentsLayer'].forEach(id => {
@@ -1374,27 +1283,29 @@
         });
         return;
       }
-      if (!state.isDrawing) return;
+      if (!state.isDrawing || e.pointerId !== state.activePointerId) return;
       let pos = getPos(e);
 
       if (state.selectedShape !== 'free' && state.selectedShape !== 'text' && state.currentTool !== 'eraser') {
-        if (snapshot) {
-          try { drawCtx.putImageData(snapshot, 0, 0); } catch (_) {}
-        }
+        if (snapshot) drawCtx.putImageData(snapshot, 0, 0);
         drawShapePreview(state.shapeStart, pos);
       } else if (state.selectedShape === 'free') {
-        // rAF ile birleştir: yüksek frekanslı touch event'lerde kasma olmaz
-        pendingFreePos = pos;
-        if (!freehandRaf) {
-          freehandRaf = requestAnimationFrame(flushFreehandStroke);
-        }
+        drawCtx.beginPath();
+        drawCtx.moveTo(lastX, lastY);
+        drawCtx.lineTo(pos.x, pos.y);
+
+        setDrawingStyle();
+        drawCtx.stroke();
+        drawCtx.globalAlpha = 1.0;
+        lastX = pos.x;
+        lastY = pos.y;
       }
     });
 
     function drawShapePreview(start, current) {
       drawCtx.beginPath();
       drawCtx.strokeStyle = state.penColor;
-      const dpr = canvasDpr();
+      const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
       drawCtx.lineWidth = state.penWidth * dpr;
       drawCtx.globalAlpha = state.currentTool === 'highlighter' ? 0.35 : 1.0;
       drawCtx.globalCompositeOperation = 'source-over';
@@ -1471,43 +1382,25 @@
     }
 
     function endDrawing(e) {
-      if (e.pointerId !== state.activePointerId) return;
-      // Son freehand noktasını işle (uç kesik kalmasın)
-      if (state.isDrawing && state.selectedShape === 'free') {
-        if (freehandRaf) { cancelAnimationFrame(freehandRaf); freehandRaf = null; }
-        if (pendingFreePos) flushFreehandStroke();
-        setDrawingStyle(0.5);
-        drawCtx.beginPath();
-        drawCtx.moveTo(midX, midY);
-        drawCtx.lineTo(lastX, lastY);
-        drawCtx.stroke();
-        drawCtx.globalAlpha = 1.0;
+      if (e.pointerId === state.activePointerId) {
+        if (state.isPanning && state.panStart) {
+          const dx = e.clientX - state.panStart.x;
+          const dy = e.clientY - state.panStart.y;
+          ['pdfCanvas', 'drawCanvas', 'imageLayer', 'instrumentsLayer'].forEach(id => {
+            state.panOffsets[id][0] += dx;
+            state.panOffsets[id][1] += dy;
+          });
+        }
+        state.isPanning = false;
+        state.panStart = null;
+        state.isDrawing = false;
+        state.activePointerId = null;
+        drawCanvas.style.cursor = state.currentTool === 'hand' ? 'grab' : 'crosshair';
+        try { drawCanvas.releasePointerCapture(e.pointerId); } catch(err){}
       }
-      if (state.isPanning && state.panStart) {
-        const dx = e.clientX - state.panStart.x;
-        const dy = e.clientY - state.panStart.y;
-        ['pdfCanvas', 'drawCanvas', 'imageLayer', 'instrumentsLayer'].forEach(id => {
-          state.panOffsets[id][0] += dx;
-          state.panOffsets[id][1] += dy;
-        });
-      }
-      state.isPanning = false;
-      state.panStart = null;
-      state.isDrawing = false;
-      strokeStarted = false;
-      pendingFreePos = null;
-      if (freehandRaf) { cancelAnimationFrame(freehandRaf); freehandRaf = null; }
-      snapshot = null;
-      releasePointerLock(e.pointerId);
-      state.activePointerId = null;
-      drawCanvas.style.cursor = state.currentTool === 'hand' ? 'grab' : 'crosshair';
-      try { drawCanvas.releasePointerCapture(e.pointerId); } catch(err){}
     }
     drawCanvas.addEventListener('pointerup', endDrawing);
     drawCanvas.addEventListener('pointercancel', endDrawing);
-    drawCanvas.addEventListener('lostpointercapture', (e) => {
-      if (e.pointerId === state.activePointerId) endDrawing(e);
-    });
 
     // Araç Mod Değiştiricileri
     document.getElementById('btnHand').addEventListener('click', () => { state.selectedShape = 'free'; document.getElementById('shapeSelect').value = 'free'; setTool('hand', 'btnHand'); });
@@ -1968,15 +1861,11 @@
     }
 
     function boardCssToCanvas(p) {
-      // Workspace CSS (araç left/top, pan öncesi) → çizim tuvali piksel koordinatı
-      // PDF açıkken drawCanvas origin kayar; pan transform getBoundingClientRect'e yansır.
+      // Workspace CSS noktası → çizim tuvali piksel koordinatı (pan + dpr)
       const rect = drawCanvas.getBoundingClientRect();
       const ws = workspace.getBoundingClientRect();
-      const panX = (state.panOffsets && state.panOffsets.drawCanvas) ? state.panOffsets.drawCanvas[0] : 0;
-      const panY = (state.panOffsets && state.panOffsets.drawCanvas) ? state.panOffsets.drawCanvas[1] : 0;
-      // instrumentsLayer ile aynı pan ofseti: görsel konum = ws + local + pan
-      const clientX = ws.left + p.x + panX;
-      const clientY = ws.top + p.y + panY;
+      const clientX = ws.left + p.x;
+      const clientY = ws.top + p.y;
       const scaleX = drawCanvas.width / (rect.width || 1);
       const scaleY = drawCanvas.height / (rect.height || 1);
       return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
@@ -2002,8 +1891,6 @@
 
     function beginInstrumentDrawing(e, key, el) {
       if (!isCanvasDrawingTool() || (key !== 'ruler' && key !== 'triangle45' && key !== 'protractor')) return false;
-      // Akıllı tahta: başka parmak/araç aktifse kenar çizimine izin verme
-      if (!acquirePointerLock(e.pointerId)) return false;
       const inst = key === 'protractor' ? state.instruments.protractor : state.instruments[key];
       instrumentDrawing.active = true;
       instrumentDrawing.key = key;
@@ -2028,7 +1915,7 @@
         try { instrumentDrawing.snapshot = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height); } catch (_) { instrumentDrawing.snapshot = null; }
       }
       saveCanvasState();
-      try { el.setPointerCapture(e.pointerId); } catch (_) {}
+      el.setPointerCapture(e.pointerId);
       el.classList.add('edge-draw');
       el.style.cursor = (typeof PEN_CURSOR !== 'undefined' ? PEN_CURSOR : 'crosshair');
       return true;
@@ -2056,7 +1943,7 @@
         const key = instrumentDrawing.key;
         if ((key === 'ruler' || key === 'triangle45') && instrumentDrawing.start && instrumentDrawing.last) {
           if (instrumentDrawing.snapshot) {
-            try { drawCtx.putImageData(instrumentDrawing.snapshot, 0, 0); } catch (_) {}
+            drawCtx.putImageData(instrumentDrawing.snapshot, 0, 0);
           }
           drawInstrumentSegment(instrumentDrawing.start, instrumentDrawing.last);
         }
@@ -2069,7 +1956,6 @@
         instrumentDrawing.snapshot = null;
         el.classList.remove('edge-draw');
         el.style.cursor = '';
-        releasePointerLock(e.pointerId);
         try { el.releasePointerCapture(e.pointerId); } catch (_) {}
       }
     }
@@ -2100,19 +1986,19 @@
     protractorEl.addEventListener('pointerdown', (e) => {
       if (e.target.closest('button')) return;
       if (beginInstrumentDrawing(e, 'protractor', protractorEl)) { e.preventDefault(); e.stopPropagation(); return; }
-      if (!acquirePointerLock(e.pointerId)) return;
       e.preventDefault();
       e.stopPropagation();
       const p = state.instruments.protractor;
       const pt = getBoardPoint(e);
       if (e.target === protractorResizeHandle || e.target.closest('#protractorResizeHandle') ||
           e.target === protractorResizeHandleLeft || e.target.closest('#protractorResizeHandleLeft')) {
+        // Merkez sabit kalır; iki uçtan da ölçeklendirme yapılabilir.
         const leftHandle = e.target === protractorResizeHandleLeft || !!e.target.closest('#protractorResizeHandleLeft');
         protractorGesture = { mode: 'pivot', pivotX: p.x, pivotY: p.y, side: leftHandle ? 'left' : 'right' };
       } else {
         protractorGesture = { mode: 'move', offsetX: pt.x - p.x, offsetY: pt.y - p.y };
       }
-      try { protractorEl.setPointerCapture(e.pointerId); } catch (_) {}
+      protractorEl.setPointerCapture(e.pointerId);
     });
 
     protractorEl.addEventListener('pointermove', (e) => {
@@ -2144,7 +2030,6 @@
     function finishProtractorGesture(e) {
       if (instrumentDrawing.active) { finishInstrumentDrawing(e, protractorEl); return; }
       protractorGesture = null;
-      releasePointerLock(e.pointerId);
       try { protractorEl.releasePointerCapture(e.pointerId); } catch (_) {}
     }
     protractorEl.addEventListener('pointerup', finishProtractorGesture);
@@ -2267,15 +2152,14 @@
 
     compassContainer.addEventListener('pointerdown', (e) => {
       if (e.target.closest('#topRotationHandle') || e.target.closest('#radiusHandle') || e.target.closest('#pencilAssembly')) return;
-      if (!acquirePointerLock(e.pointerId)) return;
       e.stopPropagation();
       isDraggingCompass = true;
       compassDragStart = { x: e.clientX - state.compass.x, y: e.clientY - state.compass.y };
-      try { compassContainer.setPointerCapture(e.pointerId); } catch (_) {}
+      compassContainer.setPointerCapture(e.pointerId);
     });
 
     compassContainer.addEventListener('pointermove', (e) => {
-      if (isDraggingCompass && isPointerLocked(e.pointerId)) {
+      if (isDraggingCompass) {
         state.compass.x = e.clientX - compassDragStart.x;
         state.compass.y = e.clientY - compassDragStart.y;
         updateCompassTransform();
@@ -2284,14 +2168,12 @@
 
     compassContainer.addEventListener('pointerup', (e) => {
       isDraggingCompass = false;
-      releasePointerLock(e.pointerId);
       try { compassContainer.releasePointerCapture(e.pointerId); } catch(err){}
     });
 
     let isAdjustingCompassRadius = false;
 
     radiusHandle.addEventListener('pointerdown', (e) => {
-      if (!acquirePointerLock(e.pointerId)) return;
       e.stopPropagation();
       isAdjustingCompassRadius = true;
       if (typeof setCompassGuidesVisible === 'function') setCompassGuidesVisible(true);
@@ -2301,7 +2183,7 @@
         compassInfoBadge.setAttribute('opacity', '1');
         radiusHandle.setAttribute('opacity', '1');
       }
-      try { radiusHandle.setPointerCapture(e.pointerId); } catch (_) {}
+      radiusHandle.setPointerCapture(e.pointerId);
     });
 
     radiusHandle.addEventListener('pointermove', (e) => {
@@ -2327,7 +2209,6 @@
         compassInfoBadge.setAttribute('opacity', '0');
         radiusHandle.setAttribute('opacity', '0');
       }
-      releasePointerLock(e.pointerId);
       try { radiusHandle.releasePointerCapture(e.pointerId); } catch(err){}
     });
 
@@ -2367,36 +2248,32 @@
       drawCtx.globalCompositeOperation = state.currentTool === 'eraser' ? 'destination-out' : 'source-over';
     }
 
-    function pointerDeltaFromCompass(e) {
-      const rect = workspace.getBoundingClientRect();
-      const panX = (state.panOffsets && state.panOffsets.instrumentsLayer) ? state.panOffsets.instrumentsLayer[0] : 0;
-      const panY = (state.panOffsets && state.panOffsets.instrumentsLayer) ? state.panOffsets.instrumentsLayer[1] : 0;
-      const px = e.clientX - rect.left;
-      const py = e.clientY - rect.top;
-      return { dx: px - (state.compass.x + panX), dy: py - (state.compass.y + panY) };
-    }
-
     pencilAssembly.addEventListener('pointerdown', (e) => {
-      if (!acquirePointerLock(e.pointerId)) return;
       e.preventDefault();
       e.stopPropagation();
       isRotatingCompassOnly = true;
       setCompassGuidesVisible(true);
       saveCanvasState();
-      const { dx, dy } = pointerDeltaFromCompass(e);
-      const ang = Math.atan2(dy, dx);
+      const ang = Math.atan2(
+        (e.clientY - workspace.getBoundingClientRect().top) - state.compass.y,
+        (e.clientX - workspace.getBoundingClientRect().left) - state.compass.x
+      );
       pencilPrevAngleRad = ang;
       const tip = boardCssToCanvas({
         x: state.compass.x + state.compass.radius * Math.cos(ang),
         y: state.compass.y + state.compass.radius * Math.sin(ang)
       });
       pencilPrevTipCanvas = tip;
-      try { pencilAssembly.setPointerCapture(e.pointerId); } catch (_) {}
+      pencilAssembly.setPointerCapture(e.pointerId);
     });
 
     pencilAssembly.addEventListener('pointermove', (e) => {
       if (!isRotatingCompassOnly) return;
-      const { dx, dy } = pointerDeltaFromCompass(e);
+      const rect = workspace.getBoundingClientRect();
+      const px = e.clientX - rect.left;
+      const py = e.clientY - rect.top;
+      const dx = px - state.compass.x;
+      const dy = py - state.compass.y;
       const newRadius = Math.max(30, Math.min(300, Math.hypot(dx, dy)));
       const newAngleRad = Math.atan2(dy, dx);
 
@@ -2449,7 +2326,6 @@
       pencilPrevAngleRad = null;
       pencilPrevTipCanvas = null;
       setCompassGuidesVisible(false);
-      releasePointerLock(e.pointerId);
       try { pencilAssembly.releasePointerCapture(e.pointerId); } catch(err) {}
     }
     pencilAssembly.addEventListener('pointerup', stopPencilOnlyRotation);
@@ -2485,24 +2361,20 @@
     let previousCompassAngle = 0;
 
     function pointerAngleAroundCompass(e) {
-      // Pointer workspace CSS; pergel pan ile kaymış olabilir
       const rect = workspace.getBoundingClientRect();
-      const panX = (state.panOffsets && state.panOffsets.instrumentsLayer) ? state.panOffsets.instrumentsLayer[0] : 0;
-      const panY = (state.panOffsets && state.panOffsets.instrumentsLayer) ? state.panOffsets.instrumentsLayer[1] : 0;
       const px = e.clientX - rect.left;
       const py = e.clientY - rect.top;
-      return Math.atan2(py - (state.compass.y + panY), px - (state.compass.x + panX));
+      return Math.atan2(py - state.compass.y, px - state.compass.x);
     }
 
     topRotationHandle.addEventListener('pointerdown', (e) => {
-      if (!acquirePointerLock(e.pointerId)) return;
       e.preventDefault();
       e.stopPropagation();
       saveCanvasState();
       isRotatingCompassAndDrawing = true;
       previousPointerAngle = pointerAngleAroundCompass(e);
       previousCompassAngle = state.compass.angle * Math.PI / 180;
-      try { topRotationHandle.setPointerCapture(e.pointerId); } catch (_) {}
+      topRotationHandle.setPointerCapture(e.pointerId);
     });
 
     topRotationHandle.addEventListener('pointermove', (e) => {
@@ -2515,14 +2387,19 @@
 
       if (Math.abs(delta) > 0.00001) {
         const nextCompassAngle = previousCompassAngle + delta;
-        // PDF / zoom / pan: CSS → canvas piksel dönüşümü (ham compass.x/y kullanma!)
-        const center = compassCenterToCanvas();
-        const rCanvas = compassRadiusToCanvas(state.compass.radius);
+        const tipX = state.compass.x;
+        const tipY = state.compass.y;
+        const radius = state.compass.radius;
 
         drawCtx.save();
-        strokeCompassStyle();
         drawCtx.beginPath();
-        drawCtx.arc(center.x, center.y, rCanvas, previousCompassAngle, nextCompassAngle, delta < 0);
+        drawCtx.arc(tipX, tipY, radius, previousCompassAngle, nextCompassAngle, delta < 0);
+        drawCtx.strokeStyle = state.penColor;
+        drawCtx.lineWidth = state.penWidth * Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+        drawCtx.lineCap = 'round';
+        drawCtx.lineJoin = 'round';
+        drawCtx.globalAlpha = state.currentTool === 'highlighter' ? 0.35 : 1.0;
+        drawCtx.globalCompositeOperation = 'source-over';
         drawCtx.stroke();
         drawCtx.restore();
 
@@ -2536,7 +2413,6 @@
     function stopCompassRotation(e) {
       isRotatingCompassAndDrawing = false;
       previousPointerAngle = null;
-      releasePointerLock(e.pointerId);
       try { topRotationHandle.releasePointerCapture(e.pointerId); } catch(err) {}
     }
     topRotationHandle.addEventListener('pointerup', stopCompassRotation);
@@ -2572,8 +2448,6 @@
 
       el.addEventListener('pointerdown', (e) => {
         if (beginInstrumentDrawing(e, key, el)) { e.preventDefault(); e.stopPropagation(); return; }
-        // Başka parmak tahtada aktifse aracı hareket ettirme
-        if (!acquirePointerLock(e.pointerId)) return;
         e.preventDefault();
         e.stopPropagation();
         const action = e.target.getAttribute('data-action');
@@ -2595,7 +2469,7 @@
         }
         startX = e.clientX;
         startY = e.clientY;
-        try { el.setPointerCapture(e.pointerId); } catch (_) {}
+        el.setPointerCapture(e.pointerId);
       });
 
       el.addEventListener('pointermove', (e) => {
@@ -2638,13 +2512,11 @@
       el.addEventListener('pointerup', (e) => {
         if (instrumentDrawing.active) { finishInstrumentDrawing(e, el); return; }
         isDragging = isRotating = isResizing = false;
-        releasePointerLock(e.pointerId);
         try { el.releasePointerCapture(e.pointerId); } catch(err){}
       });
       el.addEventListener('pointercancel', (e) => {
         if (instrumentDrawing.active) { finishInstrumentDrawing(e, el); return; }
         isDragging = isRotating = isResizing = false;
-        releasePointerLock(e.pointerId);
       });
     }
 
@@ -2733,15 +2605,6 @@
         compassContainer.classList.add('hidden');
         btnCompass.classList.remove('bg-indigo-600', 'text-white');
       }
-    });
-
-    // Akıllı tahta: tarayıcı jestlerini (pinch-zoom, scroll) tamamen engelle
-    ['touchstart', 'touchmove', 'gesturestart', 'gesturechange'].forEach(evt => {
-      document.addEventListener(evt, (e) => {
-        if (e.target.closest && (e.target.closest('#workspace') || e.target.closest('#bottomPalette') || e.target.closest('#sidebar'))) {
-          if (e.cancelable) e.preventDefault();
-        }
-      }, { passive: false });
     });
 
     window.onload = () => {

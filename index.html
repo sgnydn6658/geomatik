@@ -2,7 +2,10 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Gelişmiş Etkileşimli Matematik ve Geometri Tahtası</title>
   
   <!-- Tailwind CSS -->
@@ -154,8 +157,9 @@
       }
       .draw-tool span { display: none; } /* metin gizle, ikon kalsın */
     }
-    /* Telefon / dar tablet — menü çekmece */
+    /* Telefon / dar tablet — menü çekmece; tahta tam genişlik */
     @media (max-width: 700px) {
+      body { height: 100dvh; height: 100vh; }
       #btnSidebarToggle { display: flex; }
       #sidebar {
         position: fixed !important;
@@ -168,8 +172,14 @@
         transform: translateX(-105%);
         transition: transform 0.22s ease;
         box-shadow: 8px 0 28px rgba(0,0,0,0.35);
+        pointer-events: none; /* kapalıyken dokunuşları engelleme */
       }
-      #sidebar.mobile-open { transform: translateX(0); }
+      #sidebar.mobile-open {
+        transform: translateX(0);
+        pointer-events: auto;
+      }
+      /* fixed sidebar akıştan çıktığı için workspace tam genişlik */
+      #workspace { width: 100%; flex: 1 1 100%; }
       #bottomPalette {
         left: 50% !important;
         transform: translateX(-50%) !important;
@@ -183,7 +193,7 @@
         max-width: calc(100vw - 60px);
       }
       #shapeMenu { top: 56px !important; }
-      .handle { width: 36px; height: 36px; } /* parmakla tutuş */
+      .handle { width: 36px; height: 36px; }
     }
     @media (max-width: 420px) {
       #bottomPalette .color-preset { width: 22px; height: 22px; }
@@ -1310,18 +1320,48 @@
     let pendingFreePos = null;
     let strokeStarted = false;
 
-    // Global tek-parmak kilidi: tahtanın başka yerine dokununca mevcut çizim/araç bozulmaz
+    // Global tek-parmak kilidi (akıllı tahta). Takılırsa tüm cihazlarda donma olmasın diye güvenlik serbest bırakma var.
+    let pointerLockWatchdog = null;
     function acquirePointerLock(pointerId) {
       if (state.globalPointerLock !== null && state.globalPointerLock !== pointerId) return false;
       state.globalPointerLock = pointerId;
+      if (pointerLockWatchdog) clearTimeout(pointerLockWatchdog);
+      // 12 sn içinde bırakılmazsa (kayıp pointerup) kilidi aç — mobil tarayıcı koruması
+      pointerLockWatchdog = setTimeout(() => {
+        state.globalPointerLock = null;
+        state.activePointerId = null;
+        state.isDrawing = false;
+        state.isPanning = false;
+      }, 12000);
       return true;
     }
     function releasePointerLock(pointerId) {
-      if (state.globalPointerLock === pointerId) state.globalPointerLock = null;
+      if (pointerId == null || state.globalPointerLock === pointerId) {
+        state.globalPointerLock = null;
+        if (pointerLockWatchdog) { clearTimeout(pointerLockWatchdog); pointerLockWatchdog = null; }
+      }
+    }
+    function forceReleaseAllPointers() {
+      state.globalPointerLock = null;
+      state.activePointerId = null;
+      state.isDrawing = false;
+      state.isPanning = false;
+      if (pointerLockWatchdog) { clearTimeout(pointerLockWatchdog); pointerLockWatchdog = null; }
     }
     function isPointerLocked(pointerId) {
       return state.globalPointerLock === null || state.globalPointerLock === pointerId;
     }
+    // Mobil/tablet: pointer kaybolursa uygulama kilitlenmesin
+    window.addEventListener('pointerup', (e) => {
+      if (state.globalPointerLock === e.pointerId) releasePointerLock(e.pointerId);
+    }, true);
+    window.addEventListener('pointercancel', (e) => {
+      if (state.globalPointerLock === e.pointerId) forceReleaseAllPointers();
+    }, true);
+    window.addEventListener('blur', forceReleaseAllPointers);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) forceReleaseAllPointers();
+    });
 
     function getPos(e) {
       const rect = drawCanvas.getBoundingClientRect();

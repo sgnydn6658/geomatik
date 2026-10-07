@@ -26,14 +26,29 @@
       overflow: hidden;
       background-color: #ffffff;
       color: #1e293b;
-      touch-action: none; /* Akıllı tahta: kaydırma/zoom jestlerini kapat */
-      -ms-touch-action: none;
       overscroll-behavior: none;
+      /* Body'de touch-action:none YOK — menü kaydırması telefon/tablette çalışsın */
     }
-    /* Akıllı tahta: tüm etkileşimli katmanlarda ikincil dokunuşları bastır */
+    /* Çizim alanı: akıllı tahta + mobil — kaydırma/zoom jesti yok, sadece çizim */
     #drawCanvas, #instrumentsLayer, #imageLayer, #workspace, .instrument, #compassContainer {
       touch-action: none;
       -ms-touch-action: none;
+    }
+    /* Menü ve palet: dikey/yatay kaydırma serbest (telefon-tablet) */
+    #sidebar, #sidebar * {
+      touch-action: pan-y;
+      -ms-touch-action: pan-y;
+    }
+    #bottomPalette, #bottomPalette * {
+      touch-action: pan-x pan-y;
+      -ms-touch-action: pan-x pan-y;
+    }
+    #sidebar input, #sidebar textarea, #sidebar select,
+    #textInputBox, #textInputBox * {
+      touch-action: auto;
+      -ms-touch-action: auto;
+      user-select: text;
+      -webkit-user-select: text;
     }
 
     /* Tahta Arka Planı ve Izgaralar */
@@ -93,14 +108,86 @@
 
     #workspace { min-width: 0; min-height: 0; }
 
-    #bottomPalette { max-width: calc(100vw - 280px); overflow-x: auto; scrollbar-width: thin; }
+    #bottomPalette {
+      max-width: calc(100vw - 280px);
+      overflow-x: auto;
+      scrollbar-width: thin;
+      -webkit-overflow-scrolling: touch;
+    }
+    #btnSidebarToggle {
+      display: none;
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 90;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: rgba(15, 23, 42, 0.94);
+      color: #e2e8f0;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.28);
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    #sidebarOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      z-index: 35;
+      touch-action: none;
+    }
+    #sidebarOverlay.open { display: block; }
+
+    /* Tablet */
     @media (max-width: 900px) {
       #sidebar { width: 210px !important; flex: 0 0 210px; }
-      #bottomPalette { left: calc(50% + 105px); max-width: calc(100vw - 235px); gap: 0.4rem; padding-left: 0.5rem; padding-right: 0.5rem; }
+      #bottomPalette {
+        left: calc(50% + 105px);
+        max-width: calc(100vw - 235px);
+        gap: 0.4rem;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+      }
+      .draw-tool span { display: none; } /* metin gizle, ikon kalsın */
     }
-    @media (max-width: 600px) {
-      #sidebar { width: 190px !important; flex-basis: 190px; padding-left: 0.35rem; padding-right: 0.35rem; }
-      #bottomPalette { left: 190px; transform: translateX(0); max-width: calc(100vw - 195px); bottom: 0.5rem; }
+    /* Telefon / dar tablet — menü çekmece */
+    @media (max-width: 700px) {
+      #btnSidebarToggle { display: flex; }
+      #sidebar {
+        position: fixed !important;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: min(280px, 86vw) !important;
+        flex: none !important;
+        z-index: 80;
+        transform: translateX(-105%);
+        transition: transform 0.22s ease;
+        box-shadow: 8px 0 28px rgba(0,0,0,0.35);
+      }
+      #sidebar.mobile-open { transform: translateX(0); }
+      #bottomPalette {
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        max-width: calc(100vw - 16px) !important;
+        bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
+        gap: 0.35rem;
+        padding: 0.4rem 0.5rem;
+      }
+      #shapeMenu, #polygonMenu, #backgroundPicker {
+        right: 8px !important;
+        max-width: calc(100vw - 60px);
+      }
+      #shapeMenu { top: 56px !important; }
+      .handle { width: 36px; height: 36px; } /* parmakla tutuş */
+    }
+    @media (max-width: 420px) {
+      #bottomPalette .color-preset { width: 22px; height: 22px; }
+      #penWidth { width: 56px !important; }
     }
 
     /* Yüklenen Görsel Element Stili */
@@ -203,6 +290,12 @@
   </style>
 </head>
 <body class="h-screen w-screen flex text-slate-800 antialiased select-none overflow-hidden bg-white">
+
+  <!-- Mobil menü aç/kapa (telefon-tablet; geniş ekranda gizli) -->
+  <button type="button" id="btnSidebarToggle" title="Menü" aria-label="Menüyü aç">
+    <i data-lucide="menu" class="w-5 h-5"></i>
+  </button>
+  <div id="sidebarOverlay" aria-hidden="true"></div>
 
   <!-- 1. SOL DİKEY MENÜ PANELİ -->
   <aside id="sidebar" class="w-60 bg-slate-900/95 border-r border-slate-800 text-slate-100 z-40 flex flex-col justify-between py-3 px-2 group shrink-0 shadow-2xl backdrop-blur-md">
@@ -2735,18 +2828,64 @@
       }
     });
 
-    // Akıllı tahta: tarayıcı jestlerini (pinch-zoom, scroll) tamamen engelle
+    // Çizim alanında tarayıcı jestlerini engelle (menü/palet kaydırması serbest — tüm cihazlar)
     ['touchstart', 'touchmove', 'gesturestart', 'gesturechange'].forEach(evt => {
       document.addEventListener(evt, (e) => {
-        if (e.target.closest && (e.target.closest('#workspace') || e.target.closest('#bottomPalette') || e.target.closest('#sidebar'))) {
+        if (!e.target || !e.target.closest) return;
+        // Menü, palet, metin kutusu, form: kaydırma ve yazı serbest
+        if (e.target.closest('#sidebar') || e.target.closest('#bottomPalette') ||
+            e.target.closest('#textInputBox') || e.target.closest('#btnSidebarToggle') ||
+            e.target.closest('#sidebarOverlay') || e.target.closest('input') ||
+            e.target.closest('textarea') || e.target.closest('select')) {
+          return;
+        }
+        // Sadece tahta / araçlar: pinch-zoom ve scroll yok
+        if (e.target.closest('#workspace') || e.target.closest('.instrument') || e.target.closest('#compassContainer')) {
           if (e.cancelable) e.preventDefault();
         }
       }, { passive: false });
     });
 
+    // Mobil yan menü (telefon/dar tablet) — özellikler aynı, sadece görünüm
+    (function setupMobileSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      const toggle = document.getElementById('btnSidebarToggle');
+      if (!sidebar || !overlay || !toggle) return;
+      function closeMobileSidebar() {
+        sidebar.classList.remove('mobile-open');
+        overlay.classList.remove('open');
+      }
+      function openMobileSidebar() {
+        sidebar.classList.add('mobile-open');
+        overlay.classList.add('open');
+      }
+      toggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (sidebar.classList.contains('mobile-open')) closeMobileSidebar();
+        else openMobileSidebar();
+      });
+      overlay.addEventListener('click', closeMobileSidebar);
+      // Menüden araç seçince dar ekranda menüyü kapat (çizim alanını aç)
+      sidebar.addEventListener('click', (e) => {
+        if (window.innerWidth > 700) return;
+        const t = e.target.closest('button, label');
+        if (!t) return;
+        // Dosya input label'ı seçim bitene kadar açık kalsın
+        if (t.tagName === 'LABEL' && t.querySelector('input[type=file]')) return;
+        setTimeout(closeMobileSidebar, 180);
+      });
+      window.addEventListener('resize', () => {
+        if (window.innerWidth > 700) closeMobileSidebar();
+        try { resizeCanvases(); } catch (_) {}
+      });
+    })();
+
     window.onload = () => {
       resizeCanvases();
       updatePageIndicator();
+      try { lucide.createIcons(); } catch (_) {}
     };
   </script>
 </body>

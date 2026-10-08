@@ -111,6 +111,20 @@
 
     #workspace { min-width: 0; min-height: 0; }
 
+    /* Sağ üst kontroller: her cihazda tıklanabilir (çizim jest engeli menüyü kesmesin) */
+    #backgroundPicker, #shapeMenu, #polygonMenu, #pdfCloseButton {
+      pointer-events: auto !important;
+      touch-action: manipulation;
+      -ms-touch-action: manipulation;
+      z-index: 85;
+    }
+    #backgroundPicker button, #shapeMenu select, #polygonMenu button, #polygonMenu input,
+    #backgroundPickerMenu, #polygonMenuPanel, .board-bg-option {
+      pointer-events: auto !important;
+      touch-action: manipulation;
+      cursor: pointer;
+    }
+
     #bottomPalette {
       max-width: calc(100vw - 280px);
       overflow-x: auto;
@@ -188,11 +202,21 @@
         gap: 0.35rem;
         padding: 0.4rem 0.5rem;
       }
-      #shapeMenu, #polygonMenu, #backgroundPicker {
+      #shapeMenu, #polygonMenu, #backgroundPicker, #pdfCloseButton {
         right: 8px !important;
         max-width: calc(100vw - 60px);
+        z-index: 85 !important;
+        pointer-events: auto !important;
+        touch-action: manipulation !important;
+        -ms-touch-action: manipulation !important;
       }
+      #backgroundPicker { top: 8px !important; }
       #shapeMenu { top: 56px !important; }
+      #polygonMenu { top: 120px !important; }
+      #backgroundPicker *, #shapeMenu *, #polygonMenu * {
+        pointer-events: auto !important;
+        touch-action: manipulation !important;
+      }
       .handle { width: 36px; height: 36px; }
     }
     @media (max-width: 420px) {
@@ -1667,15 +1691,34 @@
     });
 
     const polygonMenuPanel = document.getElementById('polygonMenuPanel');
-    document.getElementById('btnPolygonMenu').addEventListener('click', (e) => {
-      e.stopPropagation();
+    // pointerup + click: mobil/tablet'te tıklama kaçmasın
+    function bindTap(el, handler) {
+      if (!el) return;
+      let armed = false;
+      el.addEventListener('pointerdown', (e) => {
+        armed = true;
+        e.stopPropagation();
+      });
+      el.addEventListener('pointerup', (e) => {
+        if (!armed) return;
+        armed = false;
+        e.stopPropagation();
+        e.preventDefault();
+        handler(e);
+      });
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+      });
+    }
+    bindTap(document.getElementById('btnPolygonMenu'), () => {
       polygonMenuPanel.classList.toggle('hidden');
     });
-    document.getElementById('polygonMinus').addEventListener('click', () => {
+    bindTap(document.getElementById('polygonMinus'), () => {
       state.polygonSides = Math.max(3, state.polygonSides - 1);
       document.getElementById('polygonSides').value = state.polygonSides;
     });
-    document.getElementById('polygonPlus').addEventListener('click', () => {
+    bindTap(document.getElementById('polygonPlus'), () => {
       state.polygonSides = Math.min(30, state.polygonSides + 1);
       document.getElementById('polygonSides').value = state.polygonSides;
     });
@@ -1683,7 +1726,7 @@
       state.polygonSides = Math.max(3, Math.min(30, parseInt(e.target.value) || 3));
       e.target.value = state.polygonSides;
     });
-    document.getElementById('btnUsePolygon').addEventListener('click', () => {
+    bindTap(document.getElementById('btnUsePolygon'), () => {
       state.selectedShape = 'polygon';
       state.currentTool = 'pen';
       document.getElementById('shapeSelect').value = 'free';
@@ -1754,15 +1797,14 @@
       shapeMenu.style.top = `${shapeTop}px`;
       polygonMenu.style.top = `${shapeTop + shapeMenu.offsetHeight + 8}px`;
     }
-    backgroundPickerButton.addEventListener('click', (e) => {
-      e.stopPropagation();
+    bindTap(backgroundPickerButton, () => {
       const isOpen = !backgroundPickerMenu.classList.contains('hidden');
       backgroundPickerMenu.classList.toggle('hidden', isOpen);
       backgroundPickerButton.setAttribute('aria-expanded', String(!isOpen));
       syncTopRightMenus();
     });
     document.querySelectorAll('.board-bg-option').forEach(option => {
-      option.addEventListener('click', () => {
+      bindTap(option, () => {
         applyBoardBackground(option.dataset.boardBg);
         backgroundPickerMenu.classList.add('hidden');
         backgroundPickerButton.setAttribute('aria-expanded', 'false');
@@ -2868,18 +2910,33 @@
       }
     });
 
-    // Çizim alanında tarayıcı jestlerini engelle (menü/palet kaydırması serbest — tüm cihazlar)
+    // Çizim alanında tarayıcı jestlerini engelle — sağ üst menüler (arka plan, şekil, çokgen) HARİÇ
+    // (Mobilde preventDefault tıklamayı öldürüyordu → menüler "inaktif" görünüyordu)
+    function isWorkspaceUiControl(el) {
+      if (!el || !el.closest) return false;
+      return !!(
+        el.closest('#backgroundPicker') ||
+        el.closest('#shapeMenu') ||
+        el.closest('#polygonMenu') ||
+        el.closest('#pdfCloseButton') ||
+        el.closest('#textInputBox') ||
+        el.closest('#btnSidebarToggle') ||
+        el.closest('#sidebar') ||
+        el.closest('#bottomPalette') ||
+        el.closest('#sidebarOverlay') ||
+        el.closest('input') ||
+        el.closest('textarea') ||
+        el.closest('select') ||
+        el.closest('button') && el.closest('#workspace') && (
+          el.closest('#backgroundPicker') || el.closest('#shapeMenu') || el.closest('#polygonMenu') || el.closest('#pdfCloseButton')
+        )
+      );
+    }
     ['touchstart', 'touchmove', 'gesturestart', 'gesturechange'].forEach(evt => {
       document.addEventListener(evt, (e) => {
         if (!e.target || !e.target.closest) return;
-        // Menü, palet, metin kutusu, form: kaydırma ve yazı serbest
-        if (e.target.closest('#sidebar') || e.target.closest('#bottomPalette') ||
-            e.target.closest('#textInputBox') || e.target.closest('#btnSidebarToggle') ||
-            e.target.closest('#sidebarOverlay') || e.target.closest('input') ||
-            e.target.closest('textarea') || e.target.closest('select')) {
-          return;
-        }
-        // Sadece tahta / araçlar: pinch-zoom ve scroll yok
+        if (isWorkspaceUiControl(e.target)) return;
+        // Sadece boş tahta / araçlar: pinch-zoom ve scroll yok
         if (e.target.closest('#workspace') || e.target.closest('.instrument') || e.target.closest('#compassContainer')) {
           if (e.cancelable) e.preventDefault();
         }

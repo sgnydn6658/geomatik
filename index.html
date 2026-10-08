@@ -469,6 +469,7 @@
         <option value="arrow">➔ Ok İşareti</option>
         <option value="circle">⭕ Daire / Çember</option>
         <option value="rect">🔲 Dikdörtgen</option>
+        <option value="polygon">⬡ Düzgün Çokgen</option>
       </select>
     </div>
 
@@ -1662,6 +1663,14 @@
         drawCtx.stroke();
         drawCtx.globalAlpha = 1.0;
       }
+      // Şekil / çokgen: son konumu kalıcı çiz (pointerup'ta mutlaka bitsin)
+      if (state.isDrawing && state.shapeStart && state.selectedShape !== 'free' && state.selectedShape !== 'text' && state.currentTool !== 'eraser') {
+        const pos = (e && e.clientX != null) ? getPos(e) : { x: lastX, y: lastY };
+        if (snapshot) {
+          try { drawCtx.putImageData(snapshot, 0, 0); } catch (_) {}
+        }
+        drawShapePreview(state.shapeStart, pos);
+      }
       if (state.isPanning && state.panStart) {
         const dx = e.clientX - state.panStart.x;
         const dy = e.clientY - state.panStart.y;
@@ -1677,6 +1686,7 @@
       pendingFreePos = null;
       if (freehandRaf) { cancelAnimationFrame(freehandRaf); freehandRaf = null; }
       snapshot = null;
+      state.shapeStart = null;
       releasePointerLock(e.pointerId);
       state.activePointerId = null;
       drawCanvas.style.cursor = state.currentTool === 'hand' ? 'grab' : 'crosshair';
@@ -1689,10 +1699,20 @@
     });
 
     // Araç Mod Değiştiricileri
-    document.getElementById('btnHand').addEventListener('click', () => { state.selectedShape = 'free'; document.getElementById('shapeSelect').value = 'free'; setTool('hand', 'btnHand'); });
-    document.getElementById('btnPen').addEventListener('click', () => { state.selectedShape = 'free'; document.getElementById('shapeSelect').value = 'free'; setTool('pen', 'btnPen'); });
-    document.getElementById('btnHighlighter').addEventListener('click', () => { state.selectedShape = 'free'; document.getElementById('shapeSelect').value = 'free'; setTool('highlighter', 'btnHighlighter'); });
-    document.getElementById('btnEraser').addEventListener('click', () => { state.selectedShape = 'free'; document.getElementById('shapeSelect').value = 'free'; setTool('eraser', 'btnEraser'); });
+    function resetToFreeShape() {
+      state.selectedShape = 'free';
+      document.getElementById('shapeSelect').value = 'free';
+      state.anglePoints = [];
+      const polyBtn = document.getElementById('btnPolygonMenu');
+      if (polyBtn) {
+        polyBtn.classList.remove('ring-2', 'ring-indigo-500');
+        polyBtn.style.background = '';
+      }
+    }
+    document.getElementById('btnHand').addEventListener('click', () => { resetToFreeShape(); setTool('hand', 'btnHand'); });
+    document.getElementById('btnPen').addEventListener('click', () => { resetToFreeShape(); setTool('pen', 'btnPen'); });
+    document.getElementById('btnHighlighter').addEventListener('click', () => { resetToFreeShape(); setTool('highlighter', 'btnHighlighter'); });
+    document.getElementById('btnEraser').addEventListener('click', () => { resetToFreeShape(); setTool('eraser', 'btnEraser'); });
 
     function setTool(tool, btnId) {
       state.currentTool = tool;
@@ -1707,21 +1727,39 @@
       }
     }
 
+    const polygonMenuPanel = document.getElementById('polygonMenuPanel');
+    function clearPolygonHighlight() {
+      const polyBtn = document.getElementById('btnPolygonMenu');
+      if (polyBtn) {
+        polyBtn.classList.remove('ring-2', 'ring-indigo-500');
+        polyBtn.style.background = '';
+      }
+    }
     document.getElementById('shapeSelect').addEventListener('change', (e) => {
       state.selectedShape = e.target.value;
       state.anglePoints = [];
+      if (e.target.value === 'polygon') {
+        setTool('pen', 'btnPen');
+        const polyBtn = document.getElementById('btnPolygonMenu');
+        if (polyBtn) {
+          polyBtn.classList.add('ring-2', 'ring-indigo-500');
+          polyBtn.style.background = 'rgba(99,102,241,0.12)';
+        }
+      } else {
+        clearPolygonHighlight();
+      }
     });
-
-    const polygonMenuPanel = document.getElementById('polygonMenuPanel');
     document.getElementById('btnPolygonMenu').addEventListener('click', (e) => {
       e.stopPropagation();
       polygonMenuPanel.classList.toggle('hidden');
     });
-    document.getElementById('polygonMinus').addEventListener('click', () => {
+    document.getElementById('polygonMinus').addEventListener('click', (e) => {
+      e.stopPropagation();
       state.polygonSides = Math.max(3, state.polygonSides - 1);
       document.getElementById('polygonSides').value = state.polygonSides;
     });
-    document.getElementById('polygonPlus').addEventListener('click', () => {
+    document.getElementById('polygonPlus').addEventListener('click', (e) => {
+      e.stopPropagation();
       state.polygonSides = Math.min(30, state.polygonSides + 1);
       document.getElementById('polygonSides').value = state.polygonSides;
     });
@@ -1729,11 +1767,18 @@
       state.polygonSides = Math.max(3, Math.min(30, parseInt(e.target.value) || 3));
       e.target.value = state.polygonSides;
     });
-    document.getElementById('btnUsePolygon').addEventListener('click', () => {
+    document.getElementById('btnUsePolygon').addEventListener('click', (e) => {
+      e.stopPropagation();
       state.selectedShape = 'polygon';
       state.currentTool = 'pen';
-      document.getElementById('shapeSelect').value = 'free';
+      state.anglePoints = [];
+      document.getElementById('shapeSelect').value = 'polygon';
       setTool('pen', 'btnPen');
+      const polyBtn = document.getElementById('btnPolygonMenu');
+      if (polyBtn) {
+        polyBtn.classList.add('ring-2', 'ring-indigo-500');
+        polyBtn.style.background = 'rgba(99,102,241,0.12)';
+      }
       polygonMenuPanel.classList.add('hidden');
     });
 
@@ -1808,7 +1853,8 @@
       syncTopRightMenus();
     });
     document.querySelectorAll('.board-bg-option').forEach(option => {
-      option.addEventListener('click', () => {
+      option.addEventListener('click', (e) => {
+        e.stopPropagation();
         applyBoardBackground(option.dataset.boardBg);
         backgroundPickerMenu.classList.add('hidden');
         backgroundPickerButton.setAttribute('aria-expanded', 'false');
@@ -1821,7 +1867,7 @@
         backgroundPickerButton.setAttribute('aria-expanded', 'false');
         syncTopRightMenus();
       }
-      if (!polygonMenu.contains(e.target)) polygonMenuPanel.classList.add('hidden');
+      if (polygonMenu && !polygonMenu.contains(e.target)) polygonMenuPanel.classList.add('hidden');
     });
 
     document.getElementById('btnClear').addEventListener('click', () => {
@@ -2918,11 +2964,15 @@
     ['touchstart', 'touchmove', 'gesturestart', 'gesturechange'].forEach(evt => {
       document.addEventListener(evt, (e) => {
         if (!e.target || !e.target.closest) return;
-        // Menü, palet, metin kutusu, form: kaydırma ve yazı serbest
+        // Menü, palet, metin kutusu, form, sağ üst kontroller: dokunma/tıklama serbest
         if (e.target.closest('#sidebar') || e.target.closest('#bottomPalette') ||
             e.target.closest('#textInputBox') || e.target.closest('#btnSidebarToggle') ||
             e.target.closest('#sidebarOverlay') || e.target.closest('input') ||
-            e.target.closest('textarea') || e.target.closest('select')) {
+            e.target.closest('textarea') || e.target.closest('select') ||
+            e.target.closest('#backgroundPicker') || e.target.closest('#shapeMenu') ||
+            e.target.closest('#polygonMenu') || e.target.closest('#pdfCloseButton') ||
+            e.target.closest('#exportMenu') || e.target.closest('.img-bg-btn') ||
+            e.target.closest('.handle')) {
           return;
         }
         // Sadece tahta / araçlar: pinch-zoom ve scroll yok

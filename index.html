@@ -732,7 +732,6 @@
     type="button"
     id="penWidthMinus"
     class="w-5 h-5 flex items-center justify-center rounded bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-medium transition-colors"
-    aria-label="Kalem kalınlığını azalt"
   >
     −
   </button>
@@ -745,7 +744,6 @@
     step="1"
     value="1"
     class="w-20 h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
-    aria-label="Kalem kalınlığı"
   >
 
   <span id="widthValue" class="text-xs font-mono text-slate-300 w-5 text-center">1</span>
@@ -754,7 +752,6 @@
     type="button"
     id="penWidthPlus"
     class="w-5 h-5 flex items-center justify-center rounded bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-medium transition-colors"
-    aria-label="Kalem kalınlığını artır"
   >
     +
   </button>
@@ -763,6 +760,35 @@
   </div>
 
   <script>
+    const range = document.getElementById('penWidth');
+  const widthValue = document.getElementById('widthValue');
+  const minusBtn = document.getElementById('penWidthMinus');
+  const plusBtn = document.getElementById('penWidthPlus');
+
+  function updateWidth(value) {
+    const val = Math.min(50, Math.max(1, Number(value) || 1));
+
+    range.value = val;
+    widthValue.textContent = val;
+
+    // Çizim kodunuzda kullanılan kalınlık değişkenini burada güncelleyin.
+    penWidth = val;
+  }
+
+  range.addEventListener('input', () => {
+    updateWidth(range.value);
+  });
+
+  minusBtn.addEventListener('click', () => {
+    updateWidth(Number(range.value) - 1);
+  });
+
+  plusBtn.addEventListener('click', () => {
+    updateWidth(Number(range.value) + 1);
+  });
+
+  // Başlangıç kalınlığı: 1
+  updateWidth(range.value);
    
     // Uygulama Durumu
     const state = {

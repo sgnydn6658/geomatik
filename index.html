@@ -753,36 +753,39 @@ const minusBtn = document.getElementById('penWidthMinus');
 const plusBtn = document.getElementById('penWidthPlus');
 
 function updateWidth(value) {
-  const val = Math.min(50, Math.max(1, Number(value)));
+  const val = Math.max(1, Math.min(50, Number(value)));
 
+  // Slider ve sayı birlikte güncellensin
   range.value = val;
   widthValue.textContent = val;
 
-  // Çizim motoruna kalem kalınlığını uygula
-  penWidth = val;
+  // Kalem kalınlığını çizim motoruna uygula
+  // Burada mevcut çizim motorunun kalınlık değişkenini kullan.
+  currentPenWidth = val;
 
-  // Sınır değerlerinde butonları devre dışı bırak
   minusBtn.disabled = val <= 1;
   plusBtn.disabled = val >= 50;
 }
 
-// Slider hareket ettiğinde
-range.addEventListener('input', () => {
-  updateWidth(range.value);
+// Slider ile kalınlığı ayarla
+range.addEventListener('input', function () {
+  updateWidth(this.value);
 });
 
-// Eksi butonu
-minusBtn.addEventListener('click', () => {
+// Eksi: kalemi incelt
+minusBtn.addEventListener('click', function () {
   updateWidth(Number(range.value) - 1);
 });
 
-// Artı butonu
-plusBtn.addEventListener('click', () => {
+// Artı: kalemi kalınlaştır
+plusBtn.addEventListener('click', function () {
   updateWidth(Number(range.value) + 1);
 });
 
-// İlk değeri uygula
+// Başlangıç değeri
 updateWidth(range.value);
+
+   
     // Uygulama Durumu
     const state = {
       pdfDoc: null,

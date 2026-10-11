@@ -1,11 +1,15 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
- <meta charset="UTF-8">
+<meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  
+  <!-- Pardus / Linux tarayıcıları için ek optimizasyon -->
+  <meta name="theme-color" content="#000000">
+  <meta name="msapplication-TileColor" content="#000000">
 
   
   <title>Gelişmiş Etkileşimli Matematik ve Geometri Tahtası</title>
@@ -20,9 +24,100 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <style>
+
+
+* {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #111;
+      font-family: 'Segoe UI', 'Noto Sans', Arial, sans-serif;
+      /* Akıllı tahta için sabit en-boy oranı (16:9) */
+      aspect-ratio: 16 / 9;
+    }
+
+    /* 1920x1080 (en yaygın akıllı tahta çözünürlüğü) */
+    @media (min-width: 1800px) {
+      body {
+        font-size: 18px;
+      }
+    }
+
+    /* 4K tahtalar için */
+    @media (min-width: 3000px) {
+      body {
+        font-size: 28px;
+      }
+    }
+
+    /* Tam ekran kutu */
+    .tahta-container {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      color: white;
+      position: relative;
+    }
+
+    /* Örnek içerik */
+    h1 {
+      font-size: clamp(2rem, 5vw, 4rem);
+      margin-bottom: 1rem;
+    }
+
+    p {
+      font-size: clamp(1rem, 2.5vw, 1.8rem);
+      opacity: 0.9;
+    }
+
+    /* Dokunmatik buton örneği */
+    .btn {
+      margin-top: 2rem;
+      padding: 1rem 2.5rem;
+      font-size: clamp(1.1rem, 2vw, 1.6rem);
+      background: #0f3460;
+      border: none;
+      border-radius: 12px;
+      color: white;
+      cursor: pointer;
+      transition: transform 0.15s, background 0.15s;
+    }
+    .btn:active {
+      transform: scale(0.95);
+      background: #e94560;
+    }
+
+   
+
+
+
+   
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
     
     body {
+
+<div class="tahta-container">
+    <h1>Pardus + Akıllı Tahta</h1>
+    <p>Çözünürlük otomatik ayarlandı • Zoom kapalı • Tam ekran hazır</p>
+    <button class="btn" onclick="toggleFullscreen()">Tam Ekran Yap</button>
+  </div>
+
+
+     
+     
       font-family: 'Inter', sans-serif;
       user-select: none;
       -webkit-user-select: none;
@@ -742,7 +837,47 @@
  
   </div>
 
-  <script>
+  <script>   
+
+
+
+// Tam ekran (F11 veya buton)
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          console.log('Tam ekran hatası:', err);
+        });
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    // Sayfa yüklendiğinde otomatik tam ekran denemesi (isteğe bağlı)
+    // window.addEventListener('load', () => {
+    //   setTimeout(toggleFullscreen, 500);
+    // });
+
+    // Fare imlecini gizle (akıllı tahta için kullanışlı)
+    let timeout;
+    document.addEventListener('mousemove', () => {
+      document.body.style.cursor = 'default';
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        document.body.style.cursor = 'none';
+      }, 3000);
+    });
+
+   
+
+
+
+
+
+
+
+
+
+   
 document.addEventListener('DOMContentLoaded', () => {
   const range = document.getElementById('penWidth');
   const widthValue = document.getElementById('widthValue');

@@ -725,14 +725,11 @@
     <div class="h-6 w-px bg-slate-700"></div>
 
     <!-- Kalem Kalınlık Slider -->
-  <div class="flex items-center gap-1.5">
+ <div class="flex items-center gap-1.5">
   <i data-lucide="circle-dot" class="w-4 h-4 text-slate-400"></i>
 
-  <button
-    type="button"
-    id="penWidthMinus"
-    class="w-5 h-5 flex items-center justify-center rounded bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-medium transition-colors"
-  >
+  <button type="button" id="penWidthMinus"
+    class="w-5 h-5 flex items-center justify-center rounded bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-medium">
     −
   </button>
 
@@ -748,11 +745,8 @@
 
   <span id="widthValue" class="text-xs font-mono text-slate-300 w-5 text-center">1</span>
 
-  <button
-    type="button"
-    id="penWidthPlus"
-    class="w-5 h-5 flex items-center justify-center rounded bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-medium transition-colors"
-  >
+  <button type="button" id="penWidthPlus"
+    class="w-5 h-5 flex items-center justify-center rounded bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-medium">
     +
   </button>
 </div>
@@ -760,19 +754,20 @@
   </div>
 
   <script>
-    const range = document.getElementById('penWidth');
+  const range = document.getElementById('penWidth');
   const widthValue = document.getElementById('widthValue');
   const minusBtn = document.getElementById('penWidthMinus');
   const plusBtn = document.getElementById('penWidthPlus');
 
+  let penWidth = 1;
+
   function updateWidth(value) {
-    const val = Math.min(50, Math.max(1, Number(value)));
+    penWidth = Math.max(1, Math.min(50, Number(value)));
 
-    range.value = val;
-    widthValue.textContent = val;
-
-    // Çizim kodunuzun kullandığı kalınlık değişkenini güncelleyin.
-    penWidth = val;
+    // Slider, gösterge ve çizim kalınlığı aynı değeri kullanır.
+    range.value = penWidth;
+    widthValue.textContent = penWidth;
+    drawCtx.lineWidth = penWidth;
   }
 
   range.addEventListener('input', () => {
@@ -787,9 +782,6 @@
     updateWidth(Number(range.value) + 1);
   });
 
-  updateWidth(range.value);
-
-  // Başlangıç kalınlığı: 1
   updateWidth(range.value);
    
     // Uygulama Durumu

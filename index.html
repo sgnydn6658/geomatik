@@ -727,23 +727,20 @@
     <!-- Kalem Kalınlık Slider -->
 <div class="flex items-center gap-1.5">
   <i data-lucide="circle-dot" class="w-4 h-4 text-slate-400"></i>
-
   <button id="penWidthMinus" type="button"
     class="w-5 h-5 flex items-center justify-center rounded bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-medium transition-colors">
     −
   </button>
-
   <input type="range" id="penWidth" min="1" max="50" value="4"
     class="w-20 h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500">
-
   <span id="widthValue"
     class="text-xs font-mono text-slate-300 w-5 text-center">4</span>
-
   <button id="penWidthPlus" type="button"
     class="w-5 h-5 flex items-center justify-center rounded bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-medium transition-colors">
     +
   </button>
 </div>
+ 
   </div>
 
   <script>
@@ -754,15 +751,15 @@ const plusBtn = document.getElementById('penWidthPlus');
 
 function updateWidth(value) {
   const val = Math.max(1, Math.min(50, Number(value)));
-
+  
   // Slider ve sayı birlikte güncellensin
   range.value = val;
   widthValue.textContent = val;
-
+  
   // Kalem kalınlığını çizim motoruna uygula
-  // Burada mevcut çizim motorunun kalınlık değişkenini kullan.
-  currentPenWidth = val;
-
+  currentPenWidth = val;          // ← çizim motorundaki değişkenin adı buysa
+  
+  // Butonları sınırlarda devre dışı bırak
   minusBtn.disabled = val <= 1;
   plusBtn.disabled = val >= 50;
 }
@@ -784,7 +781,6 @@ plusBtn.addEventListener('click', function () {
 
 // Başlangıç değeri
 updateWidth(range.value);
-
    
     // Uygulama Durumu
     const state = {

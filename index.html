@@ -733,8 +733,7 @@
   </button>
   <input type="range" id="penWidth" min="1" max="50" value="4"
     class="w-20 h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500">
-  <span id="widthValue"
-    class="text-xs font-mono text-slate-300 w-5 text-center">4</span>
+  <span id="widthValue" class="text-xs font-mono text-slate-300 w-5 text-center">4</span>
   <button id="penWidthPlus" type="button"
     class="w-5 h-5 flex items-center justify-center rounded bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-medium transition-colors">
     +
@@ -744,43 +743,57 @@
   </div>
 
   <script>
-const range = document.getElementById('penWidth');
-const widthValue = document.getElementById('widthValue');
-const minusBtn = document.getElementById('penWidthMinus');
-const plusBtn = document.getElementById('penWidthPlus');
+document.addEventListener('DOMContentLoaded', () => {
+  const range = document.getElementById('penWidth');
+  const widthValue = document.getElementById('widthValue');
+  const minusBtn = document.getElementById('penWidthMinus');
+  const plusBtn = document.getElementById('penWidthPlus');
 
-function updateWidth(value) {
-  const val = Math.max(1, Math.min(50, Number(value)));
-  
-  // Slider ve sayı birlikte güncellensin
-  range.value = val;
-  widthValue.textContent = val;
-  
-  // Kalem kalınlığını çizim motoruna uygula
-  currentPenWidth = val;          // ← çizim motorundaki değişkenin adı buysa
-  
-  // Butonları sınırlarda devre dışı bırak
-  minusBtn.disabled = val <= 1;
-  plusBtn.disabled = val >= 50;
-}
+  if (!range || !widthValue || !minusBtn || !plusBtn) {
+    console.error('Pen width elementleri bulunamadı!');
+    return;
+  }
 
-// Slider ile kalınlığı ayarla
-range.addEventListener('input', function () {
-  updateWidth(this.value);
+  function updateWidth(value) {
+    const val = Math.max(1, Math.min(50, Number(value) || 1));
+    
+    // Slider + sayı + kalem kalınlığı hep birlikte
+    range.value = val;
+    widthValue.textContent = val;
+    
+    // Çizim motorundaki değişkeni güncelle
+    // (senin projedeki gerçek değişken adını yaz)
+    if (typeof currentPenWidth !== 'undefined') {
+      currentPenWidth = val;
+    } else if (typeof penWidth !== 'undefined') {
+      penWidth = val;
+    } else if (typeof brushSize !== 'undefined') {
+      brushSize = val;
+    }
+    
+    // Butonları sınırlarda kilitle
+    minusBtn.disabled = val <= 1;
+    plusBtn.disabled = val >= 50;
+  }
+
+  // Slider sürüklenince
+  range.addEventListener('input', (e) => {
+    updateWidth(e.target.value);
+  });
+
+  // Eksi butonu
+  minusBtn.addEventListener('click', () => {
+    updateWidth(Number(range.value) - 1);
+  });
+
+  // Artı butonu
+  plusBtn.addEventListener('click', () => {
+    updateWidth(Number(range.value) + 1);
+  });
+
+  // Başlangıç değeri
+  updateWidth(range.value);
 });
-
-// Eksi: kalemi incelt
-minusBtn.addEventListener('click', function () {
-  updateWidth(Number(range.value) - 1);
-});
-
-// Artı: kalemi kalınlaştır
-plusBtn.addEventListener('click', function () {
-  updateWidth(Number(range.value) + 1);
-});
-
-// Başlangıç değeri
-updateWidth(range.value);
    
     // Uygulama Durumu
     const state = {

@@ -766,12 +766,12 @@
   const plusBtn = document.getElementById('penWidthPlus');
 
   function updateWidth(value) {
-    const val = Math.min(50, Math.max(1, Number(value) || 1));
+    const val = Math.min(50, Math.max(1, Number(value)));
 
     range.value = val;
     widthValue.textContent = val;
 
-    // Çizim kodunuzda kullanılan kalınlık değişkenini burada güncelleyin.
+    // Çizim kodunuzun kullandığı kalınlık değişkenini güncelleyin.
     penWidth = val;
   }
 
@@ -786,6 +786,8 @@
   plusBtn.addEventListener('click', () => {
     updateWidth(Number(range.value) + 1);
   });
+
+  updateWidth(range.value);
 
   // Başlangıç kalınlığı: 1
   updateWidth(range.value);
